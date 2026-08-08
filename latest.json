@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "repository": "koresuke26/my-original-rtx-manager-updates",
+  "channel": "stable",
+  "published_at": "2026-08-08T10:45:00+09:00",
+  "app": {
+    "version": "2.3.0",
+    "file_name": "My Original RTX Manager.pyw",
+    "url": "https://raw.githubusercontent.com/koresuke26/my-original-rtx-manager-updates/main/My%20Original%20RTX%20Manager.pyw",
+    "sha256": "fe9b04c4eb8f4a067ec5db0f563db932928918c4f3ee992b75f775e56cdd21e7"
+  },
+  "pack": {
+    "number": 31,
+    "version": "1.3.0",
+    "name": "My Original Visual Pack！31 水中暗視級透明度版",
+    "folder": "My_Original_Visual_Pack_31",
+    "file_name": "My_Original_Visual_Pack_31.mcpack",
+    "url": "https://raw.githubusercontent.com/koresuke26/my-original-rtx-manager-updates/main/My_Original_Visual_Pack_31.mcpack",
+    "sha256": "081ba0dee0624adb73826d52e6b4eb782e3efddf47236b304ba0e7d0a7fb60c6",
+    "header_uuid": "29560615-3f67-54e5-b7b3-5088a6c95cfb"
+  },
+  "notes": [
+    "アプリ内のGitHub自動更新に対応",
+    "水の透明度100%で暗視ポーション級",
+    "ライトブロック0～15のRTX発光を維持"
+  ]
+}
