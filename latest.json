@@ -2,12 +2,12 @@
   "schema_version": 1,
   "repository": "koresuke26/my-original-rtx-manager-updates",
   "channel": "stable",
-  "published_at": "2026-08-08T10:45:00+09:00",
+  "published_at": "2026-08-08T17:00:00+09:00",
   "app": {
-    "version": "2.3.0",
+    "version": "2.4.0",
     "file_name": "My Original RTX Manager.pyw",
     "url": "https://raw.githubusercontent.com/koresuke26/my-original-rtx-manager-updates/main/My%20Original%20RTX%20Manager.pyw",
-    "sha256": "fe9b04c4eb8f4a067ec5db0f563db932928918c4f3ee992b75f775e56cdd21e7"
+    "sha256": "0df2b2779101a21ee6716e96d67a41657ce8d1ef4e56ea6ccfe272b063cfc1e9"
   },
   "pack": {
     "number": 31,
@@ -20,8 +20,8 @@
     "header_uuid": "29560615-3f67-54e5-b7b3-5088a6c95cfb"
   },
   "notes": [
-    "アプリ内のGitHub自動更新に対応",
-    "水の透明度100%で暗視ポーション級",
-    "ライトブロック0～15のRTX発光を維持"
+    "最初期版に近い暗色・緑基調の画面へ刷新",
+    "丸いつまみのスライダーと大きな操作カードを採用",
+    "小さい画面では全パネルと操作ボタンが自動で縦並び"
   ]
 }

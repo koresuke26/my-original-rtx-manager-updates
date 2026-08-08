@@ -25,7 +25,7 @@ from tkinter import filedialog, messagebox, ttk
 
 
 APP_NAME = "My Original RTX Manager"
-APP_VERSION_NUMBER = "2.3.0"
+APP_VERSION_NUMBER = "2.4.0"
 APP_VERSION = f"{APP_VERSION_NUMBER} Python"
 PACK_NUMBER = 31
 PACK_FOLDER = "My_Original_Visual_Pack_31"
@@ -715,6 +715,194 @@ def send_to_recycle_bin(path: Path) -> None:
         raise OSError(f"ゴミ箱への移動に失敗しました（Windowsコード: {result}）")
 
 
+def rounded_polygon(canvas: tk.Canvas, x1: float, y1: float, x2: float, y2: float, radius: float, **kwargs):
+    radius = max(2, min(radius, (x2 - x1) / 2, (y2 - y1) / 2))
+    points = [
+        x1 + radius, y1, x2 - radius, y1, x2, y1, x2, y1 + radius,
+        x2, y2 - radius, x2, y2, x2 - radius, y2, x1 + radius, y2,
+        x1, y2, x1, y2 - radius, x1, y1 + radius, x1, y1,
+    ]
+    return canvas.create_polygon(points, smooth=True, splinesteps=18, **kwargs)
+
+
+class ModernButton(tk.Canvas):
+    PALETTES = {
+        "secondary": ("#33393b", "#41494c", "#f3f7f4", "#3a4244"),
+        "primary": ("#31875a", "#5fd18d", "#ffffff", "#3ca66d"),
+        "launch": ("#286f4a", "#54bf7f", "#ffffff", "#31875a"),
+        "danger": ("#392a2d", "#8f454b", "#ffd4d6", "#483034"),
+        "quiet": ("#24292b", "#3d4548", "#e8eeeb", "#303638"),
+    }
+
+    def __init__(
+        self,
+        parent,
+        text: str,
+        command=None,
+        variant: str = "secondary",
+        height: int = 44,
+        width: int = 150,
+        align: str = "center",
+    ) -> None:
+        super().__init__(
+            parent,
+            height=height,
+            width=width,
+            bg=parent.cget("bg"),
+            highlightthickness=0,
+            borderwidth=0,
+            cursor="hand2",
+        )
+        self.button_text = text
+        self.command = command
+        self.variant = variant
+        self.align = align
+        self.widget_state = "normal"
+        self.hovered = False
+        self.bind("<Configure>", lambda _event: self.redraw())
+        self.bind("<Enter>", self._enter)
+        self.bind("<Leave>", self._leave)
+        self.bind("<ButtonRelease-1>", self._activate)
+        self.after_idle(self.redraw)
+
+    def _enter(self, _event=None) -> None:
+        if self.widget_state != "disabled":
+            self.hovered = True
+            self.redraw()
+
+    def _leave(self, _event=None) -> None:
+        self.hovered = False
+        self.redraw()
+
+    def _activate(self, _event=None) -> None:
+        if self.widget_state != "disabled" and self.command:
+            self.command()
+
+    def configure(self, cnf=None, **kwargs):
+        values = dict(cnf or {}) if isinstance(cnf, dict) else {}
+        values.update(kwargs)
+        if "text" in values:
+            self.button_text = str(values.pop("text"))
+        if "state" in values:
+            self.widget_state = str(values.pop("state"))
+            super().configure(cursor="arrow" if self.widget_state == "disabled" else "hand2")
+        result = super().configure(**values) if values else None
+        self.redraw()
+        return result
+
+    config = configure
+
+    def redraw(self) -> None:
+        if not self.winfo_exists():
+            return
+        self.delete("all")
+        width = max(20, self.winfo_width())
+        height = max(20, self.winfo_height())
+        fill, border, foreground, hover = self.PALETTES.get(self.variant, self.PALETTES["secondary"])
+        if self.hovered and self.widget_state != "disabled":
+            fill = hover
+        if self.widget_state == "disabled":
+            fill, border, foreground = "#252a2b", "#343a3c", "#707978"
+        rounded_polygon(self, 1, 1, width - 1, height - 1, 9, fill=border, outline="")
+        rounded_polygon(self, 2, 2, width - 2, height - 2, 8, fill=fill, outline="")
+        lines = self.button_text.split("\n", 1)
+        anchor = "w" if self.align == "left" else "center"
+        x = 16 if self.align == "left" else width / 2
+        if len(lines) == 1:
+            self.create_text(x, height / 2, text=lines[0], anchor=anchor, fill=foreground, font=("Yu Gothic UI", 10, "bold"))
+        else:
+            self.create_text(x, height / 2 - 7, text=lines[0], anchor=anchor, fill=foreground, font=("Yu Gothic UI", 10, "bold"))
+            muted = "#b9c3be" if self.widget_state != "disabled" else "#68706d"
+            self.create_text(x, height / 2 + 10, text=lines[1], anchor=anchor, fill=muted, font=("Yu Gothic UI", 8))
+
+
+class ModernScale(tk.Canvas):
+    def __init__(self, parent, variable: tk.DoubleVar, start: float, end: float, step: float, accent: str, accent_dark: str) -> None:
+        super().__init__(parent, height=28, bg=parent.cget("bg"), highlightthickness=0, borderwidth=0, cursor="hand2")
+        self.variable = variable
+        self.start = float(start)
+        self.end = float(end)
+        self.step = float(step)
+        self.accent = accent
+        self.accent_dark = accent_dark
+        self.variable.trace_add("write", lambda *_: self.redraw())
+        self.bind("<Configure>", lambda _event: self.redraw())
+        self.bind("<Button-1>", self._set_from_event)
+        self.bind("<B1-Motion>", self._set_from_event)
+        self.after_idle(self.redraw)
+
+    def _set_from_event(self, event) -> None:
+        width = max(1, self.winfo_width() - 24)
+        ratio = max(0.0, min(1.0, (event.x - 12) / width))
+        raw = self.start + ratio * (self.end - self.start)
+        value = round(raw / self.step) * self.step
+        self.variable.set(max(self.start, min(self.end, value)))
+
+    def redraw(self) -> None:
+        if not self.winfo_exists():
+            return
+        self.delete("all")
+        width = max(32, self.winfo_width())
+        x1, x2, y = 12, width - 12, 14
+        denominator = max(1e-9, self.end - self.start)
+        ratio = max(0.0, min(1.0, (float(self.variable.get()) - self.start) / denominator))
+        knob_x = x1 + ratio * (x2 - x1)
+        self.create_line(x1, y, x2, y, fill="#737b7d", width=6, capstyle=tk.ROUND)
+        if knob_x > x1:
+            self.create_line(x1, y, knob_x, y, fill=self.accent, width=6, capstyle=tk.ROUND)
+        self.create_oval(knob_x - 10, y - 10, knob_x + 10, y + 10, fill="#21352a", outline="")
+        self.create_oval(knob_x - 7, y - 7, knob_x + 7, y + 7, fill="#d9ffe7", outline=self.accent_dark, width=3)
+
+
+class ToggleSwitch(tk.Canvas):
+    def __init__(self, parent, variable: tk.BooleanVar, command=None, accent: str = "#5fd18d", accent_dark: str = "#2f8555") -> None:
+        super().__init__(parent, width=50, height=28, bg=parent.cget("bg"), highlightthickness=0, borderwidth=0, cursor="hand2")
+        self.variable = variable
+        self.command = command
+        self.accent = accent
+        self.accent_dark = accent_dark
+        self.widget_state = "normal"
+        self.variable.trace_add("write", lambda *_: self.redraw())
+        self.bind("<Button-1>", self._toggle)
+        self.bind("<Configure>", lambda _event: self.redraw())
+        self.after_idle(self.redraw)
+
+    def _toggle(self, _event=None) -> None:
+        if self.widget_state == "disabled":
+            return
+        self.variable.set(not self.variable.get())
+        if self.command:
+            self.command()
+
+    def configure(self, cnf=None, **kwargs):
+        values = dict(cnf or {}) if isinstance(cnf, dict) else {}
+        values.update(kwargs)
+        if "state" in values:
+            self.widget_state = str(values.pop("state"))
+            super().configure(cursor="arrow" if self.widget_state == "disabled" else "hand2")
+        result = super().configure(**values) if values else None
+        self.redraw()
+        return result
+
+    config = configure
+
+    def redraw(self) -> None:
+        if not self.winfo_exists():
+            return
+        self.delete("all")
+        enabled = bool(self.variable.get())
+        if self.widget_state == "disabled":
+            track, border, knob = "#282d2f", "#3b4244", "#707779"
+        elif enabled:
+            track, border, knob = self.accent_dark, self.accent, "#ffffff"
+        else:
+            track, border, knob = "#171a1b", "#51595b", "#a0a7a8"
+        rounded_polygon(self, 1, 2, 49, 26, 12, fill=border, outline="")
+        rounded_polygon(self, 2, 3, 48, 25, 11, fill=track, outline="")
+        center = 36 if enabled else 14
+        self.create_oval(center - 9, 5, center + 9, 23, fill=knob, outline="")
+
+
 class ManagerApp:
     BG = "#181b1d"
     PANEL = "#252a2c"
@@ -731,8 +919,8 @@ class ManagerApp:
     def __init__(self, root: tk.Tk) -> None:
         self.root = root
         self.root.title(APP_NAME)
-        self.root.geometry("1280x760")
-        self.root.minsize(680, 520)
+        self.root.geometry("1360x820")
+        self.root.minsize(560, 460)
         self.root.configure(bg=self.BG)
         self.packs: list[PackInfo] = []
         self.selected: PackInfo | None = None
@@ -740,7 +928,9 @@ class ManagerApp:
         self.diagnostics: list[str] = []
         self.busy = False
         self.compact = False
-        self.action_buttons: list[ttk.Button] = []
+        self.settings_compact = False
+        self.toolbar_compact = False
+        self.action_buttons: list[tk.Widget] = []
 
         self.preview_var = tk.BooleanVar(value=False)
         self.pack_var = tk.StringVar()
@@ -765,6 +955,7 @@ class ManagerApp:
 
         self.configure_styles()
         self.build_ui()
+        self.root.bind("<Configure>", self.on_root_resize, add="+")
         self.root.after(100, self.refresh_packs)
         self.root.after(2500, self.automatic_update_check)
 
@@ -777,189 +968,322 @@ class ManagerApp:
         style.configure("Panel.TLabel", background=self.PANEL, foreground=self.TEXT)
         style.configure("Muted.TLabel", background=self.PANEL, foreground=self.MUTED, font=("Yu Gothic UI", 9))
         style.configure("Title.TLabel", background=self.PANEL, foreground=self.TEXT, font=("Yu Gothic UI", 15, "bold"))
-        style.configure("Header.TLabel", background="#292e30", foreground=self.TEXT, font=("Yu Gothic UI", 18, "bold"))
-        style.configure("HeaderSub.TLabel", background="#292e30", foreground=self.MUTED, font=("Yu Gothic UI", 9))
         style.configure("TButton", background=self.PANEL2, foreground=self.TEXT, bordercolor=self.BORDER, padding=(12, 9), font=("Yu Gothic UI", 10, "bold"))
         style.map("TButton", background=[("active", "#394143"), ("disabled", "#25292a")], foreground=[("disabled", "#707978")])
-        style.configure("Primary.TButton", background=self.GREEN_DARK, foreground="white", bordercolor=self.GREEN, padding=(14, 10))
-        style.map("Primary.TButton", background=[("active", "#3ca66d")])
-        style.configure("Danger.TButton", background="#3a2a2d", foreground="#ffd4d6", bordercolor="#8f454b")
-        style.configure("TCheckbutton", background=self.PANEL, foreground=self.TEXT, font=("Yu Gothic UI", 10))
-        style.map("TCheckbutton", background=[("active", self.PANEL)])
-        style.configure("TCombobox", fieldbackground="#1e2223", background=self.PANEL2, foreground=self.TEXT, arrowcolor=self.TEXT, bordercolor=self.BORDER, padding=6)
+        style.configure("TCombobox", fieldbackground="#1e2223", background=self.PANEL2, foreground=self.TEXT, arrowcolor=self.TEXT, bordercolor=self.BORDER, padding=8, font=("Yu Gothic UI", 10))
         style.map("TCombobox", fieldbackground=[("readonly", "#1e2223")], foreground=[("readonly", self.TEXT)])
-        style.configure("Horizontal.TScale", background=self.PANEL, troughcolor="#777e7f", sliderrelief="flat")
-        style.configure("Horizontal.TProgressbar", troughcolor="#303638", background=self.GREEN, bordercolor="#303638")
-        style.configure("TLabelframe", background=self.PANEL, foreground=self.TEXT, bordercolor=self.BORDER, relief="solid")
-        style.configure("TLabelframe.Label", background=self.PANEL, foreground=self.GREEN, font=("Yu Gothic UI", 10, "bold"))
+        style.configure("Vertical.TScrollbar", background="#343b3d", troughcolor=self.BG, bordercolor=self.BG, arrowcolor=self.MUTED)
+        style.configure("Horizontal.TProgressbar", troughcolor="#303638", background=self.GREEN, bordercolor="#303638", lightcolor=self.GREEN, darkcolor=self.GREEN)
 
     def build_ui(self) -> None:
-        header = tk.Frame(self.root, bg="#292e30", height=66)
-        header.grid(row=0, column=0, sticky="ew")
-        header.grid_propagate(False)
-        ttk.Label(header, text="▦", style="Header.TLabel", foreground=self.GREEN).pack(side="left", padx=(20, 10))
-        titles = tk.Frame(header, bg="#292e30")
-        titles.pack(side="left", pady=10)
-        ttk.Label(titles, text=APP_NAME, style="Header.TLabel").pack(anchor="w")
-        ttk.Label(titles, text="Bedrock RTX・Vibrant Visuals パック管理（Python版）", style="HeaderSub.TLabel").pack(anchor="w")
-        ttk.Label(header, text="RTX 3080向け", style="HeaderSub.TLabel", foreground="#c9ffe0").pack(side="right", padx=22)
+        self.header = tk.Frame(self.root, bg="#292e30", height=72, highlightthickness=0)
+        self.header.grid(row=0, column=0, columnspan=2, sticky="ew")
+        self.header.grid_propagate(False)
 
-        toolbar = tk.Frame(self.root, bg="#202426", padx=14, pady=9)
-        toolbar.grid(row=1, column=0, sticky="ew")
-        self.select_button = ttk.Button(toolbar, text="⌕ 別のパックを選択", command=self.select_folder)
-        self.select_button.grid(row=0, column=0, padx=(0, 7), sticky="ew")
-        self.preview_button = ttk.Checkbutton(toolbar, text="Minecraft Preview", variable=self.preview_var, command=self.refresh_packs)
-        self.preview_button.grid(row=0, column=1, padx=7)
-        self.pack_combo = ttk.Combobox(toolbar, textvariable=self.pack_var, state="readonly")
-        self.pack_combo.grid(row=0, column=2, padx=7, sticky="ew")
+        brand = tk.Frame(self.header, bg="#151817", width=38, height=38, highlightbackground="#46504b", highlightthickness=1)
+        brand.pack(side="left", padx=(24, 12))
+        brand.pack_propagate(False)
+        blocks = tk.Frame(brand, bg="#151817")
+        blocks.pack(expand=True)
+        for row in range(2):
+            for column in range(2):
+                color = self.GREEN if row == column else "#376a4c"
+                tk.Frame(blocks, width=10, height=10, bg=color).grid(row=row, column=column, padx=2, pady=2)
+
+        self.header_titles = tk.Frame(self.header, bg="#292e30")
+        self.header_titles.pack(side="left", pady=10)
+        tk.Label(self.header_titles, text=APP_NAME, bg="#292e30", fg=self.TEXT, font=("Yu Gothic UI", 19, "bold")).pack(anchor="w")
+        self.subtitle_label = tk.Label(
+            self.header_titles,
+            text="Bedrock RTX・Vibrant Visuals パック管理（Python版）",
+            bg="#292e30",
+            fg=self.MUTED,
+            font=("Yu Gothic UI", 9),
+        )
+        self.subtitle_label.pack(anchor="w")
+
+        self.header_actions = tk.Frame(self.header, bg="#292e30")
+        self.header_actions.pack(side="right", padx=22)
+        self.gpu_badge = tk.Label(
+            self.header_actions,
+            text="RTX 3080 向け",
+            bg="#253a30",
+            fg="#c9ffe0",
+            font=("Yu Gothic UI", 9, "bold"),
+            padx=13,
+            pady=7,
+            highlightbackground="#3f7657",
+            highlightthickness=1,
+        )
+        self.gpu_badge.pack(side="left", padx=(0, 8))
+        self.help_button = ModernButton(self.header_actions, text="?", command=self.show_help, variant="quiet", width=40, height=38)
+        self.help_button.pack(side="left")
+
+        self.toolbar = tk.Frame(self.root, bg="#202426", padx=18, pady=10, highlightbackground="#343a3d", highlightthickness=1)
+        self.toolbar.grid(row=1, column=0, columnspan=2, sticky="ew")
+        self.select_button = ModernButton(self.toolbar, text="⌕  別のパックを選択", command=self.select_folder, variant="secondary", height=48)
+
+        self.preview_shell = tk.Frame(self.toolbar, bg="#2b3032", highlightbackground="#3a4143", highlightthickness=1, padx=13, pady=8)
+        self.preview_button = ToggleSwitch(self.preview_shell, self.preview_var, command=self.refresh_packs, accent=self.GREEN, accent_dark=self.GREEN_DARK)
+        self.preview_button.pack(side="left")
+        tk.Label(self.preview_shell, text="Minecraft Preview", bg="#2b3032", fg=self.TEXT, font=("Yu Gothic UI", 10, "bold")).pack(side="left", padx=(9, 2))
+
+        self.pack_shell = tk.Frame(self.toolbar, bg="#2b3032", highlightbackground="#3a4143", highlightthickness=1, padx=12, pady=6)
+        tk.Label(self.pack_shell, text="対象パック", bg="#2b3032", fg=self.MUTED, font=("Yu Gothic UI", 8)).pack(side="left", padx=(0, 9))
+        self.pack_combo = ttk.Combobox(self.pack_shell, textvariable=self.pack_var, state="readonly")
+        self.pack_combo.pack(side="left", fill="x", expand=True)
         self.pack_combo.bind("<<ComboboxSelected>>", self.on_pack_selected)
-        self.refresh_button = ttk.Button(toolbar, text="↻", width=3, command=self.refresh_packs)
-        self.refresh_button.grid(row=0, column=3, padx=(7, 0))
-        toolbar.columnconfigure(2, weight=1)
+        self.refresh_button = ModernButton(self.pack_shell, text="↻", command=self.refresh_packs, variant="quiet", width=42, height=38)
+        self.refresh_button.pack(side="left", padx=(8, 0))
+        self.layout_toolbar(False)
 
         self.canvas = tk.Canvas(self.root, bg=self.BG, highlightthickness=0)
         scrollbar = ttk.Scrollbar(self.root, orient="vertical", command=self.canvas.yview)
         self.canvas.configure(yscrollcommand=scrollbar.set)
         self.canvas.grid(row=2, column=0, sticky="nsew")
         scrollbar.grid(row=2, column=1, sticky="ns")
-        self.content = tk.Frame(self.canvas, bg=self.BG, padx=14, pady=14)
+        self.content = tk.Frame(self.canvas, bg=self.BG, padx=20, pady=18)
         self.canvas_window = self.canvas.create_window((0, 0), window=self.content, anchor="nw")
         self.content.bind("<Configure>", lambda _: self.canvas.configure(scrollregion=self.canvas.bbox("all")))
         self.canvas.bind("<Configure>", self.on_canvas_resize)
-        self.canvas.bind_all("<MouseWheel>", lambda event: self.canvas.yview_scroll(int(-event.delta / 120), "units"))
+        self.root.bind_all("<MouseWheel>", self.on_mousewheel, add="+")
 
-        self.left = ttk.Frame(self.content, style="Panel.TFrame", padding=16)
-        self.right = ttk.Frame(self.content, style="Panel.TFrame", padding=16)
-        self.left.grid(row=0, column=0, sticky="nsew", padx=(0, 12))
+        self.left = tk.Frame(self.content, bg=self.PANEL, padx=18, pady=18, highlightbackground=self.BORDER, highlightthickness=1)
+        self.right = tk.Frame(self.content, bg=self.BG)
+        self.left.grid(row=0, column=0, sticky="nsew", padx=(0, 18))
         self.right.grid(row=0, column=1, sticky="nsew")
+        self.content.columnconfigure(0, minsize=350)
         self.content.columnconfigure(1, weight=1)
         self.build_left()
         self.build_right()
 
-        status = tk.Frame(self.root, bg="#202426", padx=14, pady=7)
+        status = tk.Frame(self.root, bg="#202426", padx=20, pady=8, highlightbackground="#343a3d", highlightthickness=1)
         status.grid(row=3, column=0, columnspan=2, sticky="ew")
         ttk.Progressbar(status, variable=self.progress_var, maximum=100).pack(fill="x")
-        tk.Label(status, textvariable=self.status_var, bg="#202426", fg=self.MUTED, font=("Yu Gothic UI", 9)).pack(pady=(4, 0))
+        tk.Label(status, textvariable=self.status_var, bg="#202426", fg=self.MUTED, font=("Yu Gothic UI", 9)).pack(pady=(5, 0))
 
         self.root.rowconfigure(2, weight=1)
         self.root.columnconfigure(0, weight=1)
 
     def build_left(self) -> None:
-        ttk.Label(self.left, text="CURRENT PACK", style="Muted.TLabel", foreground=self.GREEN).pack(anchor="w")
-        ttk.Label(self.left, textvariable=self.current_name_var, style="Title.TLabel", wraplength=310).pack(anchor="w", pady=(5, 4))
-        ttk.Label(self.left, textvariable=self.current_path_var, style="Muted.TLabel", wraplength=310).pack(anchor="w")
+        tk.Label(self.left, text="CURRENT PACK", bg=self.PANEL, fg=self.GREEN, font=("Yu Gothic UI", 9, "bold")).pack(anchor="w")
+        tk.Label(self.left, textvariable=self.current_name_var, bg=self.PANEL, fg=self.TEXT, font=("Yu Gothic UI", 16, "bold"), wraplength=310, justify="left").pack(anchor="w", pady=(6, 4))
+        tk.Label(self.left, textvariable=self.current_path_var, bg=self.PANEL, fg=self.MUTED, font=("Yu Gothic UI", 8), wraplength=310, justify="left").pack(anchor="w")
 
-        protection = ttk.LabelFrame(self.left, text="✓ 保護される設定", padding=10)
-        protection.pack(fill="x", pady=12)
-        ttk.Label(
+        protection = tk.Frame(self.left, bg="#253a30", highlightbackground="#3e6d51", highlightthickness=1, padx=13, pady=11)
+        protection.pack(fill="x", pady=13)
+        tk.Label(protection, text="✓  今回の保護設定", bg="#253a30", fg="#d8ffe7", font=("Yu Gothic UI", 10, "bold")).pack(anchor="w", pady=(0, 6))
+        tk.Label(
             protection,
             text="• 公式16pxのRGB色を維持\n• 水だけ透明度を調整可能\n• 草側面の黒化防止\n• 方解石・クォーツは非鏡面\n• ライトブロック0～15を発光対応\n• GitHubから安全確認後に自動更新\n• 変更前に自動バックアップ",
-            style="Panel.TLabel",
+            bg="#253a30",
+            fg="#dce7e1",
+            font=("Yu Gothic UI", 9),
             justify="left",
         ).pack(anchor="w")
 
-        self.diag_frame = ttk.LabelFrame(self.left, text="トラブル診断", padding=10)
+        self.diag_frame = tk.Frame(self.left, bg="#202628", highlightbackground="#46606a", highlightthickness=1, padx=12, pady=11)
         self.diag_frame.pack(fill="x", pady=(0, 10))
-        self.diag_title = tk.Label(self.diag_frame, textvariable=self.diag_title_var, bg=self.PANEL, fg=self.BLUE, font=("Yu Gothic UI", 11, "bold"), anchor="w")
+        tk.Label(self.diag_frame, text="トラブル診断", bg="#202628", fg=self.BLUE, font=("Yu Gothic UI", 9, "bold")).pack(anchor="w", pady=(0, 5))
+        self.diag_title = tk.Label(self.diag_frame, textvariable=self.diag_title_var, bg="#202628", fg=self.BLUE, font=("Yu Gothic UI", 11, "bold"), anchor="w")
         self.diag_title.pack(fill="x")
-        ttk.Label(self.diag_frame, textvariable=self.diag_message_var, style="Panel.TLabel", wraplength=295, justify="left").pack(anchor="w", pady=(5, 4))
-        ttk.Label(self.diag_frame, text="対処方法", style="Muted.TLabel", foreground=self.GREEN).pack(anchor="w")
-        ttk.Label(self.diag_frame, textvariable=self.diag_action_var, style="Muted.TLabel", wraplength=295, justify="left").pack(anchor="w")
-        meta = ttk.Frame(self.diag_frame, style="Panel.TFrame")
+        tk.Label(self.diag_frame, textvariable=self.diag_message_var, bg="#202628", fg=self.TEXT, font=("Yu Gothic UI", 9), wraplength=295, justify="left").pack(anchor="w", pady=(6, 5))
+        solution = tk.Frame(self.diag_frame, bg="#1a1f20", padx=9, pady=7)
+        solution.pack(fill="x")
+        tk.Label(solution, text="対処方法", bg="#1a1f20", fg=self.GREEN, font=("Yu Gothic UI", 8, "bold")).pack(anchor="w")
+        tk.Label(solution, textvariable=self.diag_action_var, bg="#1a1f20", fg=self.MUTED, font=("Yu Gothic UI", 8), wraplength=275, justify="left").pack(anchor="w")
+        meta = tk.Frame(self.diag_frame, bg="#202628")
         meta.pack(fill="x", pady=(6, 4))
-        ttk.Label(meta, textvariable=self.diag_code_var, style="Muted.TLabel").pack(side="left")
-        ttk.Label(meta, textvariable=self.diag_time_var, style="Muted.TLabel").pack(side="right")
-        ttk.Button(self.diag_frame, text="↻ 今すぐ診断", command=self.refresh_packs).pack(fill="x", pady=(2, 5))
+        tk.Label(meta, textvariable=self.diag_code_var, bg="#202628", fg=self.BLUE, font=("Consolas", 8)).pack(side="left")
+        tk.Label(meta, textvariable=self.diag_time_var, bg="#202628", fg=self.MUTED, font=("Yu Gothic UI", 8)).pack(side="right")
+        ModernButton(self.diag_frame, text="↻  今すぐ診断", command=self.refresh_packs, variant="quiet", height=36).pack(fill="x", pady=(3, 6))
         self.history = tk.Listbox(self.diag_frame, height=4, bg="#1d2122", fg=self.MUTED, selectbackground=self.GREEN_DARK, borderwidth=0, font=("Yu Gothic UI", 8))
         self.history.pack(fill="x")
-        ttk.Label(self.left, text=f"App Version  {APP_VERSION}", style="Muted.TLabel").pack(anchor="e", pady=(4, 0))
+        warning = tk.Frame(self.left, bg="#343126", highlightbackground="#665b3c", highlightthickness=1, padx=11, pady=9)
+        warning.pack(fill="x", pady=(1, 10))
+        tk.Label(warning, text="重要", bg="#343126", fg=self.YELLOW, font=("Yu Gothic UI", 9, "bold")).pack(anchor="w")
+        tk.Label(warning, text="適用するときはMinecraftを終了してください。反映にはワールドへの入り直しが必要です。", bg="#343126", fg="#ddd6c4", font=("Yu Gothic UI", 8), wraplength=290, justify="left").pack(anchor="w", pady=(3, 0))
+        tk.Label(self.left, text=f"App Version  {APP_VERSION}", bg=self.PANEL, fg=self.MUTED, font=("Yu Gothic UI", 8)).pack(anchor="e", pady=(2, 0))
 
     def build_right(self) -> None:
-        quick = ttk.Frame(self.right, style="Panel.TFrame")
+        quick = tk.Frame(self.right, bg=self.BG)
         quick.pack(fill="x", pady=(0, 10))
-        ttk.Button(quick, text="⌫ 選択解除", command=self.clear_selection).pack(side="right", padx=(7, 0))
-        ttk.Button(quick, text="↶ 推奨値に戻す", command=self.reset_values).pack(side="right")
+        ModernButton(quick, text="⌫  選択解除", command=self.clear_selection, variant="secondary", width=150, height=40).pack(side="right", padx=(8, 0))
+        ModernButton(quick, text="↶  推奨値に戻す", command=self.reset_values, variant="secondary", width=160, height=40).pack(side="right")
 
-        settings = ttk.Frame(self.right, style="Panel.TFrame")
-        settings.pack(fill="x")
-        left_settings = ttk.LabelFrame(settings, text="凹凸・霧・発光", padding=12)
-        right_settings = ttk.LabelFrame(settings, text="反射・見やすさ", padding=12)
-        left_settings.grid(row=0, column=0, sticky="nsew", padx=(0, 6))
-        right_settings.grid(row=0, column=1, sticky="nsew", padx=(6, 0))
-        settings.columnconfigure((0, 1), weight=1)
-        self.add_slider(left_settings, "霧の濃さ", self.fog_var, 0, 100, "右ほど独自の霧が濃くなります", "")
-        self.add_slider(left_settings, "発光の明るさ", self.emissive_var, 0, 200, "光源とライトブロックの発光を調整", "%")
-        self.add_slider(left_settings, "凹凸の強さ", self.relief_var, 1, 5, "公式色は変えず立体感だけ調整", " / 5")
-        self.add_slider(left_settings, "凹凸の密度", self.density_var, 1, 5, "凹凸が現れる場所の多さ", " / 5")
-        self.add_slider(right_settings, "金属・宝石の鏡面反射", self.mirror_var, 0, 100, "色を残したまま反射を変更", "%")
-        self.add_slider(right_settings, "表面の粗さ", self.roughness_var, 0, 100, "右ほど落ち着いた反射", "")
-        self.add_slider(right_settings, "水の透明度", self.water_var, 0, 100, "100%で暗視ポーション級の鮮明さ", "%")
-        ttk.Checkbutton(right_settings, text="環境光を強くする（暗部を見やすく）", variable=self.ambient_var).pack(anchor="w", pady=15)
-        ttk.Checkbutton(right_settings, text="ちらつき防止（推奨：ON）", variable=self.anti_var).pack(anchor="w", pady=15)
+        self.settings_shell = tk.Frame(self.right, bg=self.PANEL, highlightbackground=self.BORDER, highlightthickness=1, padx=18, pady=8)
+        self.settings_shell.pack(fill="x")
+        self.left_settings = tk.Frame(self.settings_shell, bg=self.PANEL, padx=10, pady=5)
+        self.right_settings = tk.Frame(self.settings_shell, bg=self.PANEL, padx=10, pady=5, highlightbackground="#3a4143", highlightthickness=0)
+        self.left_settings.grid(row=0, column=0, sticky="nsew", padx=(0, 12))
+        self.right_settings.grid(row=0, column=1, sticky="nsew", padx=(12, 0))
+        self.settings_shell.columnconfigure((0, 1), weight=1)
+        tk.Label(self.left_settings, text="凹凸・霧・発光", bg=self.PANEL, fg=self.GREEN, font=("Yu Gothic UI", 10, "bold")).pack(anchor="w", pady=(4, 3))
+        tk.Label(self.right_settings, text="反射・見やすさ", bg=self.PANEL, fg=self.GREEN, font=("Yu Gothic UI", 10, "bold")).pack(anchor="w", pady=(4, 3))
+        self.add_slider(self.left_settings, "霧の濃さ", self.fog_var, 0, 100, "右ほど独自の霧が濃くなります", "")
+        self.add_slider(self.left_settings, "発光の明るさ", self.emissive_var, 0, 200, "光源とライトブロックの発光を調整", "%")
+        self.add_slider(self.left_settings, "凹凸の強さ", self.relief_var, 1, 5, "公式色は変えず立体感だけ調整", " / 5")
+        self.add_slider(self.left_settings, "凹凸の密度", self.density_var, 1, 5, "凹凸が現れる場所の多さ", " / 5")
+        self.add_slider(self.right_settings, "金属・宝石の鏡面反射", self.mirror_var, 0, 100, "色を残したまま反射を変更", "%")
+        self.add_slider(self.right_settings, "表面の粗さ", self.roughness_var, 0, 100, "右ほど落ち着いた反射", "")
+        self.add_slider(self.right_settings, "水の透明度", self.water_var, 0, 100, "100%で暗視ポーション級の鮮明さ", "%")
+        self.add_toggle(self.right_settings, "環境光を強くする", "暗部を少し見やすくします", self.ambient_var)
+        self.add_toggle(self.right_settings, "ちらつき防止", "遠景の細かな凹凸と強すぎる反射を抑えます", self.anti_var)
 
-        apply_row = ttk.Frame(self.right, style="Panel.TFrame")
+        apply_row = tk.Frame(self.right, bg=self.BG)
         apply_row.pack(fill="x", pady=12)
-        self.apply_button = ttk.Button(apply_row, text="⚙ 選択パックに調整を適用", style="Primary.TButton", command=self.apply_tuning)
-        self.apply_button.pack(side="left", fill="x", expand=True)
-        self.export_button = ttk.Button(apply_row, text="⇩ 書き出す", command=self.export_pack)
-        self.export_button.pack(side="left", padx=8)
-        self.delete_button = ttk.Button(apply_row, text="♲", style="Danger.TButton", width=3, command=self.delete_pack)
-        self.delete_button.pack(side="left")
+        apply_row.columnconfigure(0, weight=1)
+        self.apply_button = ModernButton(apply_row, text="⚙  選択パックに調整を適用", variant="primary", command=self.apply_tuning, height=48)
+        self.apply_button.grid(row=0, column=0, sticky="ew")
+        self.export_button = ModernButton(apply_row, text="⇩  書き出す", command=self.export_pack, width=145, height=48)
+        self.export_button.grid(row=0, column=1, padx=8)
+        self.delete_button = ModernButton(apply_row, text="♲", variant="danger", command=self.delete_pack, width=52, height=48)
+        self.delete_button.grid(row=0, column=2)
 
-        actions = ttk.Frame(self.right, style="Panel.TFrame")
-        actions.pack(fill="x")
-        self.install_button = ttk.Button(actions, text="▣ 最新の！31を導入\n水中暗視級・ライト発光修正版", command=self.install_pack)
-        self.restore_button = ttk.Button(actions, text="↶ バックアップから復元\n調整前へ戻す", command=self.restore_pack)
-        self.folder_button = ttk.Button(actions, text="▤ パックフォルダーを開く", command=self.open_pack_folder)
-        self.launch_button = ttk.Button(actions, text="▶ Minecraft RTXを起動", style="Primary.TButton", command=self.launch_minecraft)
+        self.actions = tk.Frame(self.right, bg=self.BG)
+        self.actions.pack(fill="x")
+        self.install_button = ModernButton(self.actions, text="▣  最新の！31を導入\n水中暗視級・ライト発光修正版", command=self.install_pack, align="left", height=62)
+        self.restore_button = ModernButton(self.actions, text="↶  バックアップから復元\n調整前の状態へ戻す", command=self.restore_pack, align="left", height=62)
+        self.folder_button = ModernButton(self.actions, text="▤  パックフォルダーを開く\n保存場所を確認", command=self.open_pack_folder, align="left", height=62)
+        self.launch_button = ModernButton(self.actions, text="▶  Minecraft RTXを起動\n調整後にワールドへ入る", variant="launch", command=self.launch_minecraft, align="left", height=62)
         for index, button in enumerate((self.install_button, self.restore_button, self.folder_button, self.launch_button)):
             button.grid(row=index // 2, column=index % 2, sticky="ew", padx=(0 if index % 2 == 0 else 5, 5 if index % 2 == 0 else 0), pady=5)
-        self.update_button = ttk.Button(actions, text="⇩ GitHubで最新版を確認・自動更新", style="Primary.TButton", command=self.check_for_updates)
+        self.update_button = ModernButton(self.actions, text="⇩  GitHubで最新版を確認・自動更新", variant="primary", command=self.check_for_updates, height=50)
         self.update_button.grid(row=2, column=0, columnspan=2, sticky="ew", pady=5)
-        actions.columnconfigure((0, 1), weight=1)
+        self.actions.columnconfigure((0, 1), weight=1)
         self.action_buttons = [self.select_button, self.refresh_button, self.apply_button, self.export_button, self.delete_button, self.install_button, self.restore_button, self.folder_button, self.launch_button, self.update_button]
         self.update_button_states()
 
     def add_slider(self, parent, title: str, variable: tk.DoubleVar, start: int, end: int, note: str, suffix: str) -> None:
-        row = ttk.Frame(parent, style="Panel.TFrame")
-        row.pack(fill="x", pady=8)
+        row = tk.Frame(parent, bg=self.PANEL, pady=6)
+        row.pack(fill="x")
         value_var = tk.StringVar()
         def update(*_):
             value = int(round(variable.get()))
             value_var.set(f"{value}{suffix}")
         variable.trace_add("write", update)
         update()
-        top = ttk.Frame(row, style="Panel.TFrame")
+        top = tk.Frame(row, bg=self.PANEL)
         top.pack(fill="x")
-        ttk.Label(top, text=title, style="Panel.TLabel", font=("Yu Gothic UI", 10, "bold")).pack(side="left")
-        ttk.Label(top, textvariable=value_var, style="Panel.TLabel").pack(side="right")
+        tk.Label(top, text=title, bg=self.PANEL, fg=self.TEXT, font=("Yu Gothic UI", 10, "bold")).pack(side="left")
+        tk.Label(top, textvariable=value_var, bg="#1d2021", fg="#e9f4ee", font=("Yu Gothic UI", 9, "bold"), padx=9, pady=3, highlightbackground="#444b4e", highlightthickness=1).pack(side="right")
         step = 1 if end <= 5 else 10 if end == 200 else 5
-        scale = ttk.Scale(
-            row,
-            from_=start,
-            to=end,
-            variable=variable,
-            command=lambda raw, var=variable, amount=step: var.set(round(float(raw) / amount) * amount),
+        ModernScale(row, variable, start, end, step, self.GREEN, self.GREEN_DARK).pack(fill="x", pady=(3, 0))
+        tk.Label(row, text=note, bg=self.PANEL, fg=self.MUTED, font=("Yu Gothic UI", 8)).pack(anchor="w")
+        tk.Frame(row, bg="#383e40", height=1).pack(fill="x", pady=(8, 0))
+
+    def add_toggle(self, parent, title: str, note: str, variable: tk.BooleanVar) -> None:
+        row = tk.Frame(parent, bg=self.PANEL, pady=10)
+        row.pack(fill="x")
+        labels = tk.Frame(row, bg=self.PANEL)
+        labels.pack(side="left", fill="x", expand=True)
+        value_var = tk.StringVar()
+        variable.trace_add("write", lambda *_: value_var.set("ON" if variable.get() else "OFF"))
+        value_var.set("ON" if variable.get() else "OFF")
+        title_row = tk.Frame(labels, bg=self.PANEL)
+        title_row.pack(fill="x")
+        tk.Label(title_row, text=title, bg=self.PANEL, fg=self.TEXT, font=("Yu Gothic UI", 10, "bold")).pack(side="left")
+        tk.Label(title_row, textvariable=value_var, bg="#1d2021", fg="#e9f4ee", font=("Yu Gothic UI", 8, "bold"), padx=7, pady=2).pack(side="left", padx=9)
+        tk.Label(labels, text=note, bg=self.PANEL, fg=self.MUTED, font=("Yu Gothic UI", 8)).pack(anchor="w", pady=(4, 0))
+        ToggleSwitch(row, variable, accent=self.GREEN, accent_dark=self.GREEN_DARK).pack(side="right", padx=(10, 0))
+        tk.Frame(parent, bg="#383e40", height=1).pack(fill="x")
+
+    def show_help(self) -> None:
+        messagebox.showinfo(
+            "使い方",
+            "1. 上部で対象パックを選びます。\n"
+            "2. スライダーで見た目を調整します。\n"
+            "3. 「選択パックに調整を適用」を押します。\n"
+            "4. Minecraft RTXを起動してワールドへ入り直します。\n\n"
+            "画面が小さいときは縦に並び替わり、マウスホイールで全項目を確認できます。",
         )
-        scale.pack(fill="x", pady=(5, 2))
-        ttk.Label(row, text=note, style="Muted.TLabel").pack(anchor="w")
+
+    def on_mousewheel(self, event) -> None:
+        amount = int(-event.delta / 120) if event.delta else 0
+        if amount:
+            self.canvas.yview_scroll(amount, "units")
+
+    def layout_toolbar(self, compact: bool) -> None:
+        for widget in (self.select_button, self.preview_shell, self.pack_shell):
+            widget.grid_forget()
+        self.toolbar.columnconfigure(0, weight=0, minsize=0)
+        self.toolbar.columnconfigure(1, weight=0, minsize=0)
+        self.toolbar.columnconfigure(2, weight=0, minsize=0)
+        if compact:
+            self.select_button.grid(row=0, column=0, sticky="ew", padx=(0, 5), pady=(0, 7))
+            self.preview_shell.grid(row=0, column=1, sticky="ew", padx=(5, 0), pady=(0, 7))
+            self.pack_shell.grid(row=1, column=0, columnspan=2, sticky="ew")
+            self.toolbar.columnconfigure((0, 1), weight=1)
+        else:
+            self.select_button.grid(row=0, column=0, sticky="ew", padx=(0, 7))
+            self.preview_shell.grid(row=0, column=1, sticky="ew", padx=7)
+            self.pack_shell.grid(row=0, column=2, sticky="ew", padx=(7, 0))
+            self.toolbar.columnconfigure(0, weight=0, minsize=250)
+            self.toolbar.columnconfigure(1, weight=0, minsize=215)
+            self.toolbar.columnconfigure(2, weight=1, minsize=260)
+
+    def on_root_resize(self, event) -> None:
+        if event.widget is not self.root:
+            return
+        compact = event.width < 820
+        if compact != self.toolbar_compact:
+            self.toolbar_compact = compact
+            self.layout_toolbar(compact)
+        if event.width < 720:
+            if self.subtitle_label.winfo_manager():
+                self.subtitle_label.pack_forget()
+            if self.gpu_badge.winfo_manager():
+                self.gpu_badge.pack_forget()
+        else:
+            if not self.subtitle_label.winfo_manager():
+                self.subtitle_label.pack(anchor="w")
+            if not self.gpu_badge.winfo_manager():
+                self.gpu_badge.pack(side="left", padx=(0, 8), before=self.help_button)
+
+    def layout_settings(self, compact: bool) -> None:
+        self.left_settings.grid_forget()
+        self.right_settings.grid_forget()
+        if compact:
+            self.left_settings.grid(row=0, column=0, sticky="nsew")
+            self.right_settings.grid(row=1, column=0, sticky="nsew", pady=(8, 0))
+            self.settings_shell.columnconfigure(0, weight=1)
+            self.settings_shell.columnconfigure(1, weight=0)
+            for index, button in enumerate((self.install_button, self.restore_button, self.folder_button, self.launch_button)):
+                button.grid_configure(row=index, column=0, columnspan=2, padx=0, pady=4)
+            self.update_button.grid_configure(row=4, column=0, columnspan=2, pady=5)
+        else:
+            self.left_settings.grid(row=0, column=0, sticky="nsew", padx=(0, 12))
+            self.right_settings.grid(row=0, column=1, sticky="nsew", padx=(12, 0))
+            self.settings_shell.columnconfigure((0, 1), weight=1)
+            for index, button in enumerate((self.install_button, self.restore_button, self.folder_button, self.launch_button)):
+                button.grid_configure(
+                    row=index // 2,
+                    column=index % 2,
+                    columnspan=1,
+                    padx=(0 if index % 2 == 0 else 5, 5 if index % 2 == 0 else 0),
+                    pady=5,
+                )
+            self.update_button.grid_configure(row=2, column=0, columnspan=2, pady=5)
 
     def on_canvas_resize(self, event) -> None:
-        self.canvas.itemconfigure(self.canvas_window, width=max(640, event.width))
-        compact = event.width < 900
-        if compact == self.compact:
-            return
-        self.compact = compact
-        if compact:
-            self.left.grid_configure(row=0, column=0, columnspan=2, padx=0, pady=(0, 12))
-            self.right.grid_configure(row=1, column=0, columnspan=2)
-            self.content.columnconfigure(0, weight=1)
-            self.content.columnconfigure(1, weight=0)
-        else:
-            self.left.grid_configure(row=0, column=0, columnspan=1, padx=(0, 12), pady=0)
-            self.right.grid_configure(row=0, column=1, columnspan=1)
-            self.content.columnconfigure(0, weight=0)
-            self.content.columnconfigure(1, weight=1)
+        self.canvas.itemconfigure(self.canvas_window, width=max(1, event.width))
+        compact = event.width < 980
+        if compact != self.compact:
+            self.compact = compact
+            if compact:
+                self.left.grid_configure(row=0, column=0, columnspan=2, padx=0, pady=(0, 14))
+                self.right.grid_configure(row=1, column=0, columnspan=2)
+                self.content.columnconfigure(0, weight=1, minsize=0)
+                self.content.columnconfigure(1, weight=0, minsize=0)
+            else:
+                self.left.grid_configure(row=0, column=0, columnspan=1, padx=(0, 18), pady=0)
+                self.right.grid_configure(row=0, column=1, columnspan=1)
+                self.content.columnconfigure(0, weight=0, minsize=350)
+                self.content.columnconfigure(1, weight=1)
+        settings_compact = event.width < 720
+        if settings_compact != self.settings_compact:
+            self.settings_compact = settings_compact
+            self.layout_settings(settings_compact)
 
     def settings(self) -> dict:
         return {
