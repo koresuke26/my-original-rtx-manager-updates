@@ -25,7 +25,7 @@ from tkinter import filedialog, messagebox, ttk
 
 
 APP_NAME = "My Original RTX Manager"
-APP_VERSION_NUMBER = "2.4.0"
+APP_VERSION_NUMBER = "2.5.0"
 APP_VERSION = f"{APP_VERSION_NUMBER} Python"
 PACK_NUMBER = 31
 PACK_FOLDER = "My_Original_Visual_Pack_31"
@@ -40,16 +40,32 @@ MAX_MANIFEST_BYTES = 256 * 1024
 MAX_APP_BYTES = 5 * 1024 * 1024
 MAX_PACK_BYTES = 100 * 1024 * 1024
 
+DEFAULT_GPU = "RTX 4060"
+GPU_PROFILES = {
+    "RTX 2060": {
+        "fog": 25, "emissive": 90, "relief": 2, "density": 2,
+        "mirror": 70, "roughness": 55, "water_transparency": 80,
+        "ambient": False, "anti_flicker": True,
+    },
+    "RTX 3060": {
+        "fog": 30, "emissive": 100, "relief": 3, "density": 2,
+        "mirror": 80, "roughness": 50, "water_transparency": 85,
+        "ambient": False, "anti_flicker": True,
+    },
+    "RTX 4060": {
+        "fog": 35, "emissive": 110, "relief": 3, "density": 3,
+        "mirror": 90, "roughness": 45, "water_transparency": 90,
+        "ambient": False, "anti_flicker": True,
+    },
+    "RTX 5060": {
+        "fog": 40, "emissive": 120, "relief": 4, "density": 4,
+        "mirror": 95, "roughness": 40, "water_transparency": 95,
+        "ambient": True, "anti_flicker": True,
+    },
+}
 DEFAULTS = {
-    "fog": 35,
-    "emissive": 100,
-    "relief": 3,
-    "density": 3,
-    "mirror": 90,
-    "roughness": 45,
-    "water_transparency": 85,
-    "ambient": False,
-    "anti_flicker": True,
+    **GPU_PROFILES[DEFAULT_GPU],
+    "night_vision": False,
 }
 
 METAL_GEM_TOKENS = (
@@ -679,14 +695,32 @@ def tune_fog_lighting(pack_path: Path, settings: dict) -> None:
     lighting_path = pack_path / "lighting" / "global.json"
     if lighting_path.is_file():
         lighting = read_json(lighting_path)
-        entry = lighting.get("minecraft:lighting_settings", {})
-        if isinstance(entry.get("ambient"), dict):
-            entry["ambient"]["illuminance"] = 0.022 if settings["ambient"] else 0.004
-        if isinstance(entry.get("sky"), dict):
-            entry["sky"]["intensity"] = 0.42 if settings["ambient"] else 0.15
-        if isinstance(entry.get("emissive"), dict):
-            entry["emissive"]["desaturation"] = 0.0
-        write_json(lighting_path, lighting)
+    else:
+        identifier = safe_key(pack_path.name.lower())[:48]
+        lighting = {
+            "format_version": "1.26.0",
+            "minecraft:lighting_settings": {
+                "description": {"identifier": f"my_original_rtx_manager:{identifier}_lighting"},
+                "ambient": {},
+                "sky": {},
+                "emissive": {},
+            },
+        }
+    entry = lighting.setdefault("minecraft:lighting_settings", {})
+    ambient = entry.setdefault("ambient", {})
+    sky = entry.setdefault("sky", {})
+    emissive = entry.setdefault("emissive", {})
+    if settings.get("night_vision"):
+        ambient.update(illuminance=3.2, color="#E8F2FF")
+        sky["intensity"] = 0.85
+    elif settings.get("ambient"):
+        ambient.update(illuminance=0.022, color="#D8E4FF")
+        sky["intensity"] = 0.42
+    else:
+        ambient.update(illuminance=0.004, color="#D8E4FF")
+        sky["intensity"] = 0.15
+    emissive["desaturation"] = 0.0
+    write_json(lighting_path, lighting)
     shadow_path = pack_path / "shadows" / "global.json"
     if shadow_path.is_file():
         shadows = read_json(shadow_path)
@@ -934,6 +968,7 @@ class ManagerApp:
 
         self.preview_var = tk.BooleanVar(value=False)
         self.pack_var = tk.StringVar()
+        self.gpu_var = tk.StringVar(value=DEFAULT_GPU)
         self.fog_var = tk.DoubleVar(value=DEFAULTS["fog"])
         self.emissive_var = tk.DoubleVar(value=DEFAULTS["emissive"])
         self.relief_var = tk.DoubleVar(value=DEFAULTS["relief"])
@@ -942,6 +977,7 @@ class ManagerApp:
         self.roughness_var = tk.DoubleVar(value=DEFAULTS["roughness"])
         self.water_var = tk.DoubleVar(value=DEFAULTS["water_transparency"])
         self.ambient_var = tk.BooleanVar(value=DEFAULTS["ambient"])
+        self.night_vision_var = tk.BooleanVar(value=DEFAULTS["night_vision"])
         self.anti_var = tk.BooleanVar(value=DEFAULTS["anti_flicker"])
         self.status_var = tk.StringVar(value="Minecraftと対象パックを検索しています…")
         self.progress_var = tk.DoubleVar(value=0)
@@ -1004,18 +1040,31 @@ class ManagerApp:
 
         self.header_actions = tk.Frame(self.header, bg="#292e30")
         self.header_actions.pack(side="right", padx=22)
-        self.gpu_badge = tk.Label(
+        self.gpu_selector_shell = tk.Frame(
             self.header_actions,
-            text="RTX 3080 向け",
             bg="#253a30",
-            fg="#c9ffe0",
-            font=("Yu Gothic UI", 9, "bold"),
-            padx=13,
-            pady=7,
+            padx=8,
+            pady=4,
             highlightbackground="#3f7657",
             highlightthickness=1,
         )
-        self.gpu_badge.pack(side="left", padx=(0, 8))
+        tk.Label(
+            self.gpu_selector_shell,
+            text="GPU推奨",
+            bg="#253a30",
+            fg="#9fd9b7",
+            font=("Yu Gothic UI", 8, "bold"),
+        ).pack(side="left", padx=(2, 7))
+        self.gpu_combo = ttk.Combobox(
+            self.gpu_selector_shell,
+            textvariable=self.gpu_var,
+            values=list(GPU_PROFILES),
+            state="readonly",
+            width=10,
+        )
+        self.gpu_combo.pack(side="left")
+        self.gpu_combo.bind("<<ComboboxSelected>>", self.on_gpu_selected)
+        self.gpu_selector_shell.pack(side="left", padx=(0, 8))
         self.help_button = ModernButton(self.header_actions, text="?", command=self.show_help, variant="quiet", width=40, height=38)
         self.help_button.pack(side="left")
 
@@ -1075,7 +1124,7 @@ class ManagerApp:
         tk.Label(protection, text="✓  今回の保護設定", bg="#253a30", fg="#d8ffe7", font=("Yu Gothic UI", 10, "bold")).pack(anchor="w", pady=(0, 6))
         tk.Label(
             protection,
-            text="• 公式16pxのRGB色を維持\n• 水だけ透明度を調整可能\n• 草側面の黒化防止\n• 方解石・クォーツは非鏡面\n• ライトブロック0～15を発光対応\n• GitHubから安全確認後に自動更新\n• 変更前に自動バックアップ",
+            text="• 公式16pxのRGB色を維持\n• 水だけ透明度を調整可能\n• 草側面の黒化防止\n• 方解石・クォーツは非鏡面\n• 洞窟の暗視級表示を切替可能\n• ライトブロック0～15を発光対応\n• GitHubから安全確認後に自動更新\n• 変更前に自動バックアップ",
             bg="#253a30",
             fg="#dce7e1",
             font=("Yu Gothic UI", 9),
@@ -1128,6 +1177,7 @@ class ManagerApp:
         self.add_slider(self.right_settings, "表面の粗さ", self.roughness_var, 0, 100, "右ほど落ち着いた反射", "")
         self.add_slider(self.right_settings, "水の透明度", self.water_var, 0, 100, "100%で暗視ポーション級の鮮明さ", "%")
         self.add_toggle(self.right_settings, "環境光を強くする", "暗部を少し見やすくします", self.ambient_var)
+        self.add_toggle(self.right_settings, "洞窟・暗所を暗視級にする", "光源のない場所へ強い最低環境光を加えます", self.night_vision_var)
         self.add_toggle(self.right_settings, "ちらつき防止", "遠景の細かな凹凸と強すぎる反射を抑えます", self.anti_var)
 
         apply_row = tk.Frame(self.right, bg=self.BG)
@@ -1192,9 +1242,11 @@ class ManagerApp:
         messagebox.showinfo(
             "使い方",
             "1. 上部で対象パックを選びます。\n"
-            "2. スライダーで見た目を調整します。\n"
-            "3. 「選択パックに調整を適用」を押します。\n"
-            "4. Minecraft RTXを起動してワールドへ入り直します。\n\n"
+            "2. 右上でGPUを選ぶと、そのGPU向け推奨値に変わります。\n"
+            "3. 必要なら暗所の暗視級トグルやスライダーを調整します。\n"
+            "4. 「選択パックに調整を適用」を押します。\n"
+            "5. Minecraft RTXを起動してワールドへ入り直します。\n\n"
+            "GPUを選んだだけではMinecraftのファイルは変更しません。\n"
             "画面が小さいときは縦に並び替わり、マウスホイールで全項目を確認できます。",
         )
 
@@ -1232,13 +1284,13 @@ class ManagerApp:
         if event.width < 720:
             if self.subtitle_label.winfo_manager():
                 self.subtitle_label.pack_forget()
-            if self.gpu_badge.winfo_manager():
-                self.gpu_badge.pack_forget()
+            if self.gpu_selector_shell.winfo_manager():
+                self.gpu_selector_shell.pack_forget()
         else:
             if not self.subtitle_label.winfo_manager():
                 self.subtitle_label.pack(anchor="w")
-            if not self.gpu_badge.winfo_manager():
-                self.gpu_badge.pack(side="left", padx=(0, 8), before=self.help_button)
+            if not self.gpu_selector_shell.winfo_manager():
+                self.gpu_selector_shell.pack(side="left", padx=(0, 8), before=self.help_button)
 
     def layout_settings(self, compact: bool) -> None:
         self.left_settings.grid_forget()
@@ -1291,7 +1343,10 @@ class ManagerApp:
             "relief": int(self.relief_var.get()), "density": int(self.density_var.get()),
             "mirror": int(self.mirror_var.get()), "roughness": int(self.roughness_var.get()),
             "water_transparency": int(self.water_var.get()),
-            "ambient": bool(self.ambient_var.get()), "anti_flicker": bool(self.anti_var.get()),
+            "ambient": bool(self.ambient_var.get()),
+            "night_vision": bool(self.night_vision_var.get()),
+            "anti_flicker": bool(self.anti_var.get()),
+            "gpu_profile": self.gpu_var.get(),
         }
 
     def set_status(self, progress: float, message: str) -> None:
@@ -1349,6 +1404,8 @@ class ManagerApp:
             if button:
                 button.configure(state="disabled" if self.busy else "normal")
         self.pack_combo.configure(state="disabled" if self.busy else "readonly")
+        if hasattr(self, "gpu_combo"):
+            self.gpu_combo.configure(state="disabled" if self.busy else "readonly")
         if hasattr(self, "preview_button"):
             self.preview_button.configure(state="disabled" if self.busy else "normal")
 
@@ -1484,13 +1541,30 @@ class ManagerApp:
         self.select_pack(None)
         self.report("info", "選択を解除しました", "現在は調整対象がありません。", "上の対象パックから選択してください。", "NO_PACK_SELECTED")
 
+    def apply_gpu_profile(self, report_change: bool = True, reset_night_vision: bool = False) -> None:
+        gpu = self.gpu_var.get()
+        profile = GPU_PROFILES.get(gpu, GPU_PROFILES[DEFAULT_GPU])
+        self.fog_var.set(profile["fog"]); self.emissive_var.set(profile["emissive"])
+        self.relief_var.set(profile["relief"]); self.density_var.set(profile["density"])
+        self.mirror_var.set(profile["mirror"]); self.roughness_var.set(profile["roughness"])
+        self.water_var.set(profile["water_transparency"])
+        self.ambient_var.set(profile["ambient"]); self.anti_var.set(profile["anti_flicker"])
+        if reset_night_vision:
+            self.night_vision_var.set(False)
+        if report_change:
+            self.report(
+                "info",
+                f"{gpu}向け推奨値に変更しました",
+                "画面上の推奨値だけを変更しました。Minecraftのパックはまだ変更していません。",
+                "反映するには「選択パックに調整を適用」を押してください。",
+                "GPU_PROFILE_CHANGED",
+            )
+
+    def on_gpu_selected(self, _event=None) -> None:
+        self.apply_gpu_profile(True)
+
     def reset_values(self) -> None:
-        self.fog_var.set(DEFAULTS["fog"]); self.emissive_var.set(DEFAULTS["emissive"])
-        self.relief_var.set(DEFAULTS["relief"]); self.density_var.set(DEFAULTS["density"])
-        self.mirror_var.set(DEFAULTS["mirror"]); self.roughness_var.set(DEFAULTS["roughness"])
-        self.water_var.set(DEFAULTS["water_transparency"])
-        self.ambient_var.set(DEFAULTS["ambient"]); self.anti_var.set(DEFAULTS["anti_flicker"])
-        self.report("info", "推奨値に戻しました", "RTX 3080向けの標準値へ戻しました。", "反映するには「選択パックに調整を適用」を押してください。", "VALUES_RESET")
+        self.apply_gpu_profile(True, reset_night_vision=True)
 
     def update_requirements(self, manifest: dict) -> tuple[bool, bool]:
         app_needed = version_tuple(manifest["app"]["version"]) > version_tuple(APP_VERSION_NUMBER)
@@ -1666,14 +1740,16 @@ class ManagerApp:
                         "grass_side_black_fix_preserved": True,
                         "calcite_quartz_non_mirror": True,
                         "light_blocks_0_to_15_emissive": True,
+                        "cave_night_vision": bool(settings["night_vision"]),
                     },
                 },
             )
             return pack
         def success(_):
             self.set_status(100, "調整が完了しました。")
-            self.report("success", "設定の適用が完了しました", "凹凸・反射・陸上霧・水の透明度・水中霧・照明・ライトブロックを調整しました。", "Minecraftでワールドへ入り直してください。", "APPLY_OK")
-            messagebox.showinfo("調整できました", "水の透明度と水中の見通しを調整しました。\n100%では暗視ポーション級の設定になります。\nライトブロック0～15も発光対応済みです。\n\nMinecraftでワールドへ入り直してください。")
+            night_vision = "ON" if settings["night_vision"] else "OFF"
+            self.report("success", "設定の適用が完了しました", f"凹凸・反射・霧・水・照明・ライトブロックを調整しました。暗所の暗視級表示: {night_vision}", "Minecraftでワールドへ入り直してください。", "APPLY_OK")
+            messagebox.showinfo("調整できました", f"水の透明度と水中の見通しを調整しました。\n洞窟・暗所の暗視級表示: {night_vision}\nライトブロック0～15も発光対応済みです。\n\nMinecraftでワールドへ入り直してください。")
         self.start_task("apply", "設定を適用しています", worker, success)
 
     def restore_pack(self) -> None:
@@ -1745,8 +1821,39 @@ class ManagerApp:
                 self.finish_error("launch", error)
 
 
+def enable_high_dpi() -> None:
+    if os.name != "nt":
+        return
+    try:
+        ctypes.windll.user32.SetProcessDpiAwarenessContext(ctypes.c_void_p(-4))
+        return
+    except Exception:
+        pass
+    try:
+        ctypes.windll.shcore.SetProcessDpiAwareness(2)
+        return
+    except Exception:
+        pass
+    try:
+        ctypes.windll.user32.SetProcessDPIAware()
+    except Exception:
+        pass
+
+
+def configure_tk_quality(root: tk.Tk) -> None:
+    try:
+        dpi = float(root.winfo_fpixels("1i"))
+        root.tk.call("tk", "scaling", max(1.0, min(2.5, dpi / 72.0)))
+    except Exception:
+        pass
+    root.option_add("*Font", ("Yu Gothic UI", 10))
+    root.option_add("*tearOff", False)
+
+
 def main() -> None:
+    enable_high_dpi()
     root = tk.Tk()
+    configure_tk_quality(root)
     ManagerApp(root)
     root.mainloop()
 

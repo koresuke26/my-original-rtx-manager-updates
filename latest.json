@@ -2,12 +2,12 @@
   "schema_version": 1,
   "repository": "koresuke26/my-original-rtx-manager-updates",
   "channel": "stable",
-  "published_at": "2026-08-08T17:00:00+09:00",
+  "published_at": "2026-08-09T10:25:51+09:00",
   "app": {
-    "version": "2.4.0",
+    "version": "2.5.0",
     "file_name": "My Original RTX Manager.pyw",
     "url": "https://raw.githubusercontent.com/koresuke26/my-original-rtx-manager-updates/main/My%20Original%20RTX%20Manager.pyw",
-    "sha256": "0df2b2779101a21ee6716e96d67a41657ce8d1ef4e56ea6ccfe272b063cfc1e9"
+    "sha256": "516b6d7b549d776692041c85c4dc083d10aa66d20d078c7e6b546663dc0f33e6"
   },
   "pack": {
     "number": 31,
@@ -20,8 +20,9 @@
     "header_uuid": "29560615-3f67-54e5-b7b3-5088a6c95cfb"
   },
   "notes": [
-    "最初期版に近い暗色・緑基調の画面へ刷新",
-    "丸いつまみのスライダーと大きな操作カードを採用",
-    "小さい画面では全パネルと操作ボタンが自動で縦並び"
+    "洞窟・暗所を暗視級にするトグルを追加",
+    "RTX 2060・3060・4060・5060別の推奨値を追加",
+    "Windows高DPI表示に対応して文字と操作部品を鮮明化",
+    "GPU変更は推奨値の表示だけを変え、適用ボタンでMinecraftへ反映"
   ]
 }
