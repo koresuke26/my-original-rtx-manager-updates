@@ -2,27 +2,29 @@
   "schema_version": 1,
   "repository": "koresuke26/my-original-rtx-manager-updates",
   "channel": "stable",
-  "published_at": "2026-08-10T11:41:50+09:00",
+  "published_at": "2026-08-10T12:15:35+09:00",
   "app": {
-    "version": "2.6.0",
+    "version": "2.6.1",
     "file_name": "My Original RTX Manager.pyw",
     "url": "https://raw.githubusercontent.com/koresuke26/my-original-rtx-manager-updates/main/My%20Original%20RTX%20Manager.pyw",
-    "sha256": "1b2ab49933a5a810befa6dc927dc90761ad031456c529c0924f3fe7dcebe7d46"
+    "sha256": "1d0dedcffbabb8efdb8ba68bf461b94ce265d927e213db0a12222438bf4a0987"
   },
   "pack": {
-    "number": 32,
-    "version": "1.4.0",
-    "name": "My Original Visual Pack！32 ライト実発光修正版",
-    "folder": "My_Original_Visual_Pack_32",
-    "file_name": "My_Original_Visual_Pack_32.mcpack",
-    "url": "https://raw.githubusercontent.com/koresuke26/my-original-rtx-manager-updates/main/My_Original_Visual_Pack_32.mcpack",
-    "sha256": "c7dac92a736bdbbf7858919adbc2b433471381424d428b4089b62e05da7149fc",
-    "header_uuid": "c7a6287b-bf8c-53e4-b6b1-88eff540b9ed"
+    "number": 33,
+    "version": "1.4.1",
+    "name": "My Original Visual Pack！33 ライト表示復旧版",
+    "folder": "My_Original_Visual_Pack_33",
+    "file_name": "My_Original_Visual_Pack_33.mcpack",
+    "url": "https://raw.githubusercontent.com/koresuke26/my-original-rtx-manager-updates/main/My_Original_Visual_Pack_33.mcpack",
+    "sha256": "aeb9cbc3818e2757830c9b76e5c9e82c8194de58cebaad7bee89aa1a2e48eaa2",
+    "header_uuid": "15c9501b-e65e-43ec-a9da-1e955bcb15d6"
   },
   "notes": [
-    "RTXでライトブロックが周囲を照らさない問題へblockshape回避策を追加",
-    "Vibrant Visuals 26系向けにライトブロックのstatic_light設定を追加",
-    "診断をアイコン発光だけでなく実発光設定まで確認する方式へ修正",
+    "！32で手持ち表示を壊した非対応blockshape回避策を完全撤去",
+    "設置ライトをライトブロック手持ち時だけ見せるMinecraft標準表示へ復旧",
+    "既存パックへ調整を適用した場合も古いblockshape指定だけを安全に除去",
+    "Vibrant Visuals 26系向けstatic_light設定とライト0～15の公式アイコンを維持",
+    "レイトレース側の点光源問題を修正済みと誤表示しない診断へ変更",
     "既存のGPU別推奨値・暗所暗視・水中透明度・高DPI表示を維持"
   ]
 }
