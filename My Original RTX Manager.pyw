@@ -25,13 +25,13 @@ from tkinter import filedialog, messagebox, ttk
 
 
 APP_NAME = "My Original RTX Manager"
-APP_VERSION_NUMBER = "2.6.1"
+APP_VERSION_NUMBER = "2.7.0"
 APP_VERSION = f"{APP_VERSION_NUMBER} Python"
-PACK_NUMBER = 33
-PACK_FOLDER = "My_Original_Visual_Pack_33"
-PACK_NAME = "My Original Visual Pack！33 ライト表示復旧版"
+PACK_NUMBER = 34
+PACK_FOLDER = "My_Original_Visual_Pack_34"
+PACK_NAME = "My Original Visual Pack！34 水・洞窟MAX版"
 BASE_DIR = Path(__file__).resolve().parent
-EMBEDDED_PACK = BASE_DIR / "assets" / "My_Original_Visual_Pack_33.mcpack"
+EMBEDDED_PACK = BASE_DIR / "assets" / "My_Original_Visual_Pack_34.mcpack"
 UPDATE_REPOSITORY = "koresuke26/my-original-rtx-manager-updates"
 UPDATE_RAW_ROOT = f"https://raw.githubusercontent.com/{UPDATE_REPOSITORY}/main"
 UPDATE_MANIFEST_URL = f"{UPDATE_RAW_ROOT}/latest.json"
@@ -44,28 +44,28 @@ DEFAULT_GPU = "RTX 4060"
 GPU_PROFILES = {
     "RTX 2060": {
         "fog": 25, "emissive": 90, "relief": 2, "density": 2,
-        "mirror": 70, "roughness": 55, "water_transparency": 80,
-        "ambient": False, "anti_flicker": True,
+        "mirror": 70, "roughness": 55, "water_transparency": 100,
+        "ambient": True, "anti_flicker": True,
     },
     "RTX 3060": {
         "fog": 30, "emissive": 100, "relief": 3, "density": 2,
-        "mirror": 80, "roughness": 50, "water_transparency": 85,
-        "ambient": False, "anti_flicker": True,
+        "mirror": 80, "roughness": 50, "water_transparency": 100,
+        "ambient": True, "anti_flicker": True,
     },
     "RTX 4060": {
         "fog": 35, "emissive": 110, "relief": 3, "density": 3,
-        "mirror": 90, "roughness": 45, "water_transparency": 90,
-        "ambient": False, "anti_flicker": True,
+        "mirror": 90, "roughness": 45, "water_transparency": 100,
+        "ambient": True, "anti_flicker": True,
     },
     "RTX 5060": {
         "fog": 40, "emissive": 120, "relief": 4, "density": 4,
-        "mirror": 95, "roughness": 40, "water_transparency": 95,
+        "mirror": 95, "roughness": 40, "water_transparency": 100,
         "ambient": True, "anti_flicker": True,
     },
 }
 DEFAULTS = {
     **GPU_PROFILES[DEFAULT_GPU],
-    "night_vision": False,
+    "night_vision": True,
 }
 
 METAL_GEM_TOKENS = (
@@ -734,8 +734,8 @@ def tune_fog_lighting(pack_path: Path, settings: dict) -> None:
     sky = entry.setdefault("sky", {})
     emissive = entry.setdefault("emissive", {})
     if settings.get("night_vision"):
-        ambient.update(illuminance=3.2, color="#E8F2FF")
-        sky["intensity"] = 0.85
+        ambient.update(illuminance=5.0, color="#E8F2FF")
+        sky["intensity"] = 1.0
     elif settings.get("ambient"):
         ambient.update(illuminance=0.022, color="#D8E4FF")
         sky["intensity"] = 0.42
@@ -1147,7 +1147,7 @@ class ManagerApp:
         tk.Label(protection, text="✓  今回の保護設定", bg="#253a30", fg="#d8ffe7", font=("Yu Gothic UI", 10, "bold")).pack(anchor="w", pady=(0, 6))
         tk.Label(
             protection,
-            text="• 公式16pxのRGB色を維持\n• 水だけ透明度を調整可能\n• 草側面の黒化防止\n• 方解石・クォーツは非鏡面\n• 洞窟の暗視級表示を切替可能\n• ライトは手持ち時だけ標準表示\n• GitHubから安全確認後に自動更新\n• 変更前に自動バックアップ",
+            text="• 公式16pxのRGB色を維持\n• 水の透明度を初期値100%\n• 水中フォグ・散乱・吸収0\n• 洞窟の最低環境光を上限5.0\n• 空の間接光を上限1.0\n• ライトは手持ち時だけ標準表示\n• GitHubから安全確認後に自動更新\n• 変更前に自動バックアップ",
             bg="#253a30",
             fg="#dce7e1",
             font=("Yu Gothic UI", 9),
@@ -1200,7 +1200,7 @@ class ManagerApp:
         self.add_slider(self.right_settings, "表面の粗さ", self.roughness_var, 0, 100, "右ほど落ち着いた反射", "")
         self.add_slider(self.right_settings, "水の透明度", self.water_var, 0, 100, "100%で暗視ポーション級の鮮明さ", "%")
         self.add_toggle(self.right_settings, "環境光を強くする", "暗部を少し見やすくします", self.ambient_var)
-        self.add_toggle(self.right_settings, "洞窟・暗所を暗視級にする", "光源のない場所へ強い最低環境光を加えます", self.night_vision_var)
+        self.add_toggle(self.right_settings, "洞窟・暗所を最大環境光にする", "ONで公式上限5.0 lux・空の間接光1.0", self.night_vision_var)
         self.add_toggle(self.right_settings, "ちらつき防止", "遠景の細かな凹凸と強すぎる反射を抑えます", self.anti_var)
 
         apply_row = tk.Frame(self.right, bg=self.BG)
@@ -1215,7 +1215,7 @@ class ManagerApp:
 
         self.actions = tk.Frame(self.right, bg=self.BG)
         self.actions.pack(fill="x")
-        self.install_button = ModernButton(self.actions, text="▣  最新の！33を導入\nライト表示復旧・水中暗視級版", command=self.install_pack, align="left", height=62)
+        self.install_button = ModernButton(self.actions, text="▣  最新の！34を導入\n水透明度・洞窟環境光MAX版", command=self.install_pack, align="left", height=62)
         self.restore_button = ModernButton(self.actions, text="↶  バックアップから復元\n調整前の状態へ戻す", command=self.restore_pack, align="left", height=62)
         self.folder_button = ModernButton(self.actions, text="▤  パックフォルダーを開く\n保存場所を確認", command=self.open_pack_folder, align="left", height=62)
         self.launch_button = ModernButton(self.actions, text="▶  Minecraft RTXを起動\n調整後にワールドへ入る", variant="launch", command=self.launch_minecraft, align="left", height=62)
@@ -1266,7 +1266,7 @@ class ManagerApp:
             "使い方",
             "1. 上部で対象パックを選びます。\n"
             "2. 右上でGPUを選ぶと、そのGPU向け推奨値に変わります。\n"
-            "3. 必要なら暗所の暗視級トグルやスライダーを調整します。\n"
+            "3. 水100%・洞窟最大環境光が初期値です。必要なら下げます。\n"
             "4. 「選択パックに調整を適用」を押します。\n"
             "5. Minecraft RTXを起動してワールドへ入り直します。\n\n"
             "GPUを選んだだけではMinecraftのファイルは変更しません。\n"
@@ -1400,7 +1400,7 @@ class ManagerApp:
         raw = str(error) or error.__class__.__name__
         lowered = raw.lower()
         operation = {
-            "install": "！33の導入", "apply": "設定の適用", "restore": "復元",
+            "install": "！34の導入", "apply": "設定の適用", "restore": "復元",
             "export": "書き出し", "delete": "削除", "scan": "パック検索",
             "folder": "フォルダー表示", "launch": "Minecraftの起動", "update": "自動更新",
         }.get(context, "処理")
@@ -1409,7 +1409,7 @@ class ManagerApp:
         if isinstance(error, PermissionError) or "access is denied" in lowered or "permission" in lowered:
             return "ACCESS_DENIED", "ファイルを変更できません", f"{operation}中にWindowsから拒否されました。", "Minecraftを完全に終了して10秒ほど待ち、もう一度実行してください。"
         if isinstance(error, FileNotFoundError):
-            return "FILE_NOT_FOUND", "必要なファイルがありません", raw, "Minecraftを一度起動して終了し、再診断してください。パックの場合は！33を入れ直してください。"
+            return "FILE_NOT_FOUND", "必要なファイルがありません", raw, "Minecraftを一度起動して終了し、再診断してください。パックの場合は！34を入れ直してください。"
         if "space" in lowered or "enospc" in lowered or "空き容量" in raw:
             return "DISK_FULL", "空き容量が不足しています", f"{operation}に必要なファイルを保存できませんでした。", "Windowsの空き容量を増やしてからやり直してください。"
         return f"{context.upper()}_FAILED", f"{operation}でエラーが発生しました", raw[:180], "もう一度試してください。直らない場合は、この診断欄のスクリーンショットを送ってください。"
@@ -1472,7 +1472,7 @@ class ManagerApp:
                 existing.append(root)
             packs += scan_pack_directory(root / "resource_packs", label, "resource_packs", self.scan_issues)
             packs += scan_pack_directory(root / "development_resource_packs", label, "development_resource_packs", self.scan_issues)
-        packs.sort(key=lambda pack: (0 if "！33" in pack.name else 1, pack.name))
+        packs.sort(key=lambda pack: (0 if "！34" in pack.name else 1, pack.name))
         self.packs = packs
         self.pack_combo["values"] = [pack.label for pack in packs]
         if packs:
@@ -1484,7 +1484,7 @@ class ManagerApp:
         else:
             self.pack_var.set("")
             self.select_pack(None)
-            self.set_status(0, "PBRパックが見つかりません。先に！33を導入してください。")
+            self.set_status(0, "PBRパックが見つかりません。先に！34を導入してください。")
         self.run_diagnosis(existing)
 
     def run_diagnosis(self, existing: list[Path] | None = None) -> None:
@@ -1505,7 +1505,7 @@ class ManagerApp:
             self.report("warning", "重複したパックを検出しました", " / ".join(pack.folder for pack in duplicate), "古い方を赤い削除ボタンでゴミ箱へ移動し、1つだけ残してください。", "DUPLICATE_PACK_UUID")
             return
         if not self.packs:
-            self.report("warning", "RTX対応パックがありません", "Minecraftの保存場所は正常です。", "「最新の！33を導入」を押してください。", "PBR_PACK_NOT_FOUND")
+            self.report("warning", "RTX対応パックがありません", "Minecraftの保存場所は正常です。", "「最新の！34を導入」を押してください。", "PBR_PACK_NOT_FOUND")
             return
         if self.selected:
             light_set = self.selected.path / "textures" / "items" / "light_block_15.texture_set.json"
@@ -1531,22 +1531,42 @@ class ManagerApp:
                 self.report("warning", "ライト表示用データが不足しています", "手持ち時の標準アイコンまたはVibrant Visuals照明設定を確認できません。", "「選択パックに調整を適用」を押すと、ライト0～15の表示データを追加します。", "LIGHT_BLOCK_ASSETS_MISSING")
                 return
             fog_path = self.selected.path / "fogs" / "overworld_fog.json"
+            lighting_path = self.selected.path / "lighting" / "global.json"
             try:
                 fog_entry = read_json(fog_path).get("minecraft:fog_settings", {})
                 water_distance = fog_entry.get("distance", {}).get("water")
                 water_density = fog_entry.get("volumetric", {}).get("density", {}).get("water")
-                water_fixed = isinstance(water_distance, dict) and isinstance(water_density, dict)
+                water_media = fog_entry.get("volumetric", {}).get("media_coefficients", {}).get("water", {})
+                water_fixed = (
+                    isinstance(water_distance, dict)
+                    and float(water_distance.get("fog_start", 0)) >= 0.95
+                    and float(water_distance.get("fog_end", 0)) >= 1.0
+                    and isinstance(water_density, dict)
+                    and float(water_density.get("max_density", 1)) == 0.0
+                    and all(float(value) == 0.0 for value in water_media.get("scattering", [1]))
+                    and all(float(value) == 0.0 for value in water_media.get("absorption", [1]))
+                )
             except Exception:
                 water_fixed = False
             if not water_fixed:
-                self.report("warning", "水中の透明度が未設定です", "選択中のパックには水中専用の見通し設定がありません。", "水の透明度を選び、「選択パックに調整を適用」を押してください。", "WATER_CLARITY_MISSING")
+                self.report("warning", "水の透明度が最大ではありません", "水中フォグ・散乱・吸収のいずれかが0になっていません。", "水の透明度を100%にして「選択パックに調整を適用」を押してください。", "WATER_CLARITY_NOT_MAXIMUM")
                 return
-        self.report("info", "ライトの標準表示は正常です", f"{len(self.packs)}個のPBRパックと水中透明度設定を確認しました。設置ライトはライトを手に持つ間だけ見えます。", "現行26系のレイトレースで周囲が照らされない現象はMinecraft側の点光源問題です。照明にはVibrant Visualsを使用してください。", "LIGHT_VISIBILITY_OK_RTX_LIMITATION")
+            try:
+                lighting_entry = read_json(lighting_path).get("minecraft:lighting_settings", {})
+                ambient = lighting_entry.get("ambient", {})
+                sky = lighting_entry.get("sky", {})
+                cave_maximum = float(ambient.get("illuminance", 0)) >= 5.0 and float(sky.get("intensity", 0)) >= 1.0
+            except Exception:
+                cave_maximum = False
+            if not cave_maximum:
+                self.report("warning", "洞窟の最低環境光が最大ではありません", "最低環境光5.0または空の間接光1.0を確認できません。", "「洞窟・暗所を最大環境光にする」をONにして調整を適用してください。", "CAVE_AMBIENT_NOT_MAXIMUM")
+                return
+        self.report("success", "水・洞窟とも最大設定です", f"水透明度100%、水中フォグ・散乱・吸収0、洞窟最低環境光5.0、空の間接光1.0を確認しました。", "このままMinecraftを起動できます。", "WATER_CAVE_MAXIMUM_OK")
 
     def select_pack(self, pack: PackInfo | None) -> None:
         self.selected = pack
         self.current_name_var.set(pack.name if pack else "パックが選択されていません")
-        self.current_path_var.set(str(pack.path) if pack else "「最新の！33を導入」を押してください。")
+        self.current_path_var.set(str(pack.path) if pack else "「最新の！34を導入」を押してください。")
         self.update_button_states()
 
     def on_pack_selected(self, _event=None) -> None:
@@ -1586,7 +1606,7 @@ class ManagerApp:
         self.water_var.set(profile["water_transparency"])
         self.ambient_var.set(profile["ambient"]); self.anti_var.set(profile["anti_flicker"])
         if reset_night_vision:
-            self.night_vision_var.set(False)
+            self.night_vision_var.set(True)
         if report_change:
             self.report(
                 "info",
@@ -1731,9 +1751,9 @@ class ManagerApp:
             return install_pack_archive(EMBEDDED_PACK, preview, PACK_FOLDER)
         def success(destination):
             self.refresh_packs()
-            self.report("success", "！33を導入しました", str(destination), "Minecraftで古い！32を無効化し、！33を有効化してください。", "INSTALL_OK")
-            messagebox.showinfo("導入できました", "ライト標準表示復旧・水中暗視級版！33を導入しました。\n\nMinecraftで古い！32を無効化し、！33を有効化してください。")
-        self.start_task("install", "！33を導入しています", worker, success)
+            self.report("success", "！34を導入しました", str(destination), "Minecraftで古い！33を無効化し、！34を有効化してください。", "INSTALL_OK")
+            messagebox.showinfo("導入できました", "水透明度100%・洞窟環境光MAX版！34を導入しました。\n\nMinecraftで古い！33を無効化し、！34を有効化してください。")
+        self.start_task("install", "！34を導入しています", worker, success)
 
     def apply_tuning(self) -> None:
         if not self.selected:
@@ -1772,7 +1792,9 @@ class ManagerApp:
                     "protections": {
                         "official_16px_rgb_untouched": True,
                         "water_alpha_adjusted": water_files > 0,
-                        "underwater_fog_adjusted": True,
+                        "water_transparency_100_percent": settings["water_transparency"] >= 100,
+                        "underwater_fog_density_zero": settings["water_transparency"] >= 100,
+                        "underwater_scattering_absorption_zero": settings["water_transparency"] >= 100,
                         "grass_side_black_fix_preserved": True,
                         "calcite_quartz_non_mirror": True,
                         "light_blocks_0_to_15_emissive": True,
@@ -1782,15 +1804,17 @@ class ManagerApp:
                         "light_block_vibrant_visuals_static_light": True,
                         "ray_traced_invisible_point_light_supported": False,
                         "cave_night_vision": bool(settings["night_vision"]),
+                        "cave_ambient_illuminance_max_5": bool(settings["night_vision"]),
+                        "sky_indirect_intensity_max_1": bool(settings["night_vision"]),
                     },
                 },
             )
             return pack
         def success(_):
             self.set_status(100, "調整が完了しました。")
-            night_vision = "ON" if settings["night_vision"] else "OFF"
-            self.report("success", "設定の適用が完了しました", f"凹凸・反射・霧・水を調整し、ライトの標準表示を復旧しました。暗所の暗視級表示: {night_vision}", "Minecraftを完全に終了してから起動し、！32を無効化してワールドへ入り直してください。", "APPLY_OK")
-            messagebox.showinfo("調整できました", f"水の透明度と水中の見通しを調整しました。\n洞窟・暗所の暗視級表示: {night_vision}\n設置ライトは、ライトブロックを手に持つ間だけ標準アイコンで見えます。\n\n現行26系のレイトレースでは透明ライトの点光源が動作しない場合があります。照明にはVibrant Visualsを使用してください。\n\nMinecraftを完全に終了してから起動し、！32を無効化してワールドへ入り直してください。")
+            cave_light = "最大5.0" if settings["night_vision"] else "通常"
+            self.report("success", "設定の適用が完了しました", f"水透明度: {settings['water_transparency']}% / 洞窟最低環境光: {cave_light}", "Minecraftを完全に終了してから起動し、！33を無効化・！34を最上位で有効化してワールドへ入り直してください。", "APPLY_OK")
+            messagebox.showinfo("調整できました", f"水の透明度: {settings['water_transparency']}%\n水中フォグ・散乱・吸収: 0（100%時）\n洞窟最低環境光: {cave_light}\n空の間接光: 最大1.0\n\nMinecraftを完全に終了してから起動し、！33を無効化して！34を有効化してください。")
         self.start_task("apply", "設定を適用しています", worker, success)
 
     def restore_pack(self) -> None:
@@ -1854,7 +1878,7 @@ class ManagerApp:
     def launch_minecraft(self) -> None:
         try:
             os.startfile("minecraft://")
-            self.report("success", "Minecraftを起動しました", "Minecraftへ起動命令を送りました。", "！32を無効化し、！33を有効化してください。ライト点光源を使う場合はVibrant Visualsを選んでください。", "MINECRAFT_STARTED")
+            self.report("success", "Minecraftを起動しました", "Minecraftへ起動命令を送りました。", "！33を無効化し、！34を有効化してください。", "MINECRAFT_STARTED")
         except Exception:
             try:
                 subprocess.Popen(["cmd", "/c", "start", "", "minecraft://"], shell=False)

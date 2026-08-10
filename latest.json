@@ -2,29 +2,29 @@
   "schema_version": 1,
   "repository": "koresuke26/my-original-rtx-manager-updates",
   "channel": "stable",
-  "published_at": "2026-08-10T12:15:35+09:00",
+  "published_at": "2026-08-10T15:20:32+09:00",
   "app": {
-    "version": "2.6.1",
+    "version": "2.7.0",
     "file_name": "My Original RTX Manager.pyw",
     "url": "https://raw.githubusercontent.com/koresuke26/my-original-rtx-manager-updates/main/My%20Original%20RTX%20Manager.pyw",
-    "sha256": "1d0dedcffbabb8efdb8ba68bf461b94ce265d927e213db0a12222438bf4a0987"
+    "sha256": "443adc83d8c3240ab514df7fff650b5d3a6d822317939a307eaefa04c33c955f"
   },
   "pack": {
-    "number": 33,
-    "version": "1.4.1",
-    "name": "My Original Visual Pack！33 ライト表示復旧版",
-    "folder": "My_Original_Visual_Pack_33",
-    "file_name": "My_Original_Visual_Pack_33.mcpack",
-    "url": "https://raw.githubusercontent.com/koresuke26/my-original-rtx-manager-updates/main/My_Original_Visual_Pack_33.mcpack",
-    "sha256": "aeb9cbc3818e2757830c9b76e5c9e82c8194de58cebaad7bee89aa1a2e48eaa2",
-    "header_uuid": "15c9501b-e65e-43ec-a9da-1e955bcb15d6"
+    "number": 34,
+    "version": "1.5.0",
+    "name": "My Original Visual Pack！34 水・洞窟MAX版",
+    "folder": "My_Original_Visual_Pack_34",
+    "file_name": "My_Original_Visual_Pack_34.mcpack",
+    "url": "https://raw.githubusercontent.com/koresuke26/my-original-rtx-manager-updates/main/My_Original_Visual_Pack_34.mcpack",
+    "sha256": "a9f859516c3af8ad88ef6f384dfb50916c588290a00eac0875ac5fff8624978b",
+    "header_uuid": "d50e4372-6f38-4cf6-9a3f-20a1c93585a0"
   },
   "notes": [
-    "！32で手持ち表示を壊した非対応blockshape回避策を完全撤去",
-    "設置ライトをライトブロック手持ち時だけ見せるMinecraft標準表示へ復旧",
-    "既存パックへ調整を適用した場合も古いblockshape指定だけを安全に除去",
-    "Vibrant Visuals 26系向けstatic_light設定とライト0～15の公式アイコンを維持",
-    "レイトレース側の点光源問題を修正済みと誤表示しない診断へ変更",
-    "既存のGPU別推奨値・暗所暗視・水中透明度・高DPI表示を維持"
+    "水の透明度を全GPUプロファイルで100%へ変更",
+    "水中フォグ密度・散乱・吸収をすべて0へ変更",
+    "洞窟最低環境光を公式上限5.0 luxへ変更",
+    "空の間接光を公式上限1.0へ変更",
+    "診断で水・洞窟の最大設定を数値確認する方式へ変更",
+    "！33のライト標準表示、公式16px、凹凸、反射を維持"
   ]
 }
