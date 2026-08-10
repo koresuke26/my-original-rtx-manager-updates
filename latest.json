@@ -2,27 +2,27 @@
   "schema_version": 1,
   "repository": "koresuke26/my-original-rtx-manager-updates",
   "channel": "stable",
-  "published_at": "2026-08-09T10:25:51+09:00",
+  "published_at": "2026-08-10T11:41:50+09:00",
   "app": {
-    "version": "2.5.0",
+    "version": "2.6.0",
     "file_name": "My Original RTX Manager.pyw",
     "url": "https://raw.githubusercontent.com/koresuke26/my-original-rtx-manager-updates/main/My%20Original%20RTX%20Manager.pyw",
-    "sha256": "516b6d7b549d776692041c85c4dc083d10aa66d20d078c7e6b546663dc0f33e6"
+    "sha256": "1b2ab49933a5a810befa6dc927dc90761ad031456c529c0924f3fe7dcebe7d46"
   },
   "pack": {
-    "number": 31,
-    "version": "1.3.0",
-    "name": "My Original Visual Pack！31 水中暗視級透明度版",
-    "folder": "My_Original_Visual_Pack_31",
-    "file_name": "My_Original_Visual_Pack_31.mcpack",
-    "url": "https://raw.githubusercontent.com/koresuke26/my-original-rtx-manager-updates/main/My_Original_Visual_Pack_31.mcpack",
-    "sha256": "081ba0dee0624adb73826d52e6b4eb782e3efddf47236b304ba0e7d0a7fb60c6",
-    "header_uuid": "29560615-3f67-54e5-b7b3-5088a6c95cfb"
+    "number": 32,
+    "version": "1.4.0",
+    "name": "My Original Visual Pack！32 ライト実発光修正版",
+    "folder": "My_Original_Visual_Pack_32",
+    "file_name": "My_Original_Visual_Pack_32.mcpack",
+    "url": "https://raw.githubusercontent.com/koresuke26/my-original-rtx-manager-updates/main/My_Original_Visual_Pack_32.mcpack",
+    "sha256": "c7dac92a736bdbbf7858919adbc2b433471381424d428b4089b62e05da7149fc",
+    "header_uuid": "c7a6287b-bf8c-53e4-b6b1-88eff540b9ed"
   },
   "notes": [
-    "洞窟・暗所を暗視級にするトグルを追加",
-    "RTX 2060・3060・4060・5060別の推奨値を追加",
-    "Windows高DPI表示に対応して文字と操作部品を鮮明化",
-    "GPU変更は推奨値の表示だけを変え、適用ボタンでMinecraftへ反映"
+    "RTXでライトブロックが周囲を照らさない問題へblockshape回避策を追加",
+    "Vibrant Visuals 26系向けにライトブロックのstatic_light設定を追加",
+    "診断をアイコン発光だけでなく実発光設定まで確認する方式へ修正",
+    "既存のGPU別推奨値・暗所暗視・水中透明度・高DPI表示を維持"
   ]
 }

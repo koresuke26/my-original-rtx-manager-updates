@@ -25,13 +25,13 @@ from tkinter import filedialog, messagebox, ttk
 
 
 APP_NAME = "My Original RTX Manager"
-APP_VERSION_NUMBER = "2.5.0"
+APP_VERSION_NUMBER = "2.6.0"
 APP_VERSION = f"{APP_VERSION_NUMBER} Python"
-PACK_NUMBER = 31
-PACK_FOLDER = "My_Original_Visual_Pack_31"
-PACK_NAME = "My Original Visual Pack！31 水中暗視級透明度版"
+PACK_NUMBER = 32
+PACK_FOLDER = "My_Original_Visual_Pack_32"
+PACK_NAME = "My Original Visual Pack！32 ライト実発光修正版"
 BASE_DIR = Path(__file__).resolve().parent
-EMBEDDED_PACK = BASE_DIR / "assets" / "My_Original_Visual_Pack_31.mcpack"
+EMBEDDED_PACK = BASE_DIR / "assets" / "My_Original_Visual_Pack_32.mcpack"
 UPDATE_REPOSITORY = "koresuke26/my-original-rtx-manager-updates"
 UPDATE_RAW_ROOT = f"https://raw.githubusercontent.com/{UPDATE_REPOSITORY}/main"
 UPDATE_MANIFEST_URL = f"{UPDATE_RAW_ROOT}/latest.json"
@@ -605,7 +605,10 @@ def ensure_light_block_assets(pack_path: Path) -> None:
         if archive.testzip():
             raise ValueError("内蔵パックが壊れています。ZIPをもう一度ダウンロードしてください。")
         for name in archive.namelist():
-            if not re.fullmatch(r"textures/items/light_block_(?:[0-9]|1[0-5])(?:\.png|_mers\.tga|\.texture_set\.json)", name):
+            if not re.fullmatch(
+                r"(?:blocks\.json|local_lighting/local_lighting\.json|textures/items/light_block_(?:[0-9]|1[0-5])(?:\.png|_mers\.tga|\.texture_set\.json))",
+                name,
+            ):
                 continue
             target = pack_path / Path(name)
             target.parent.mkdir(parents=True, exist_ok=True)
@@ -1124,7 +1127,7 @@ class ManagerApp:
         tk.Label(protection, text="✓  今回の保護設定", bg="#253a30", fg="#d8ffe7", font=("Yu Gothic UI", 10, "bold")).pack(anchor="w", pady=(0, 6))
         tk.Label(
             protection,
-            text="• 公式16pxのRGB色を維持\n• 水だけ透明度を調整可能\n• 草側面の黒化防止\n• 方解石・クォーツは非鏡面\n• 洞窟の暗視級表示を切替可能\n• ライトブロック0～15を発光対応\n• GitHubから安全確認後に自動更新\n• 変更前に自動バックアップ",
+            text="• 公式16pxのRGB色を維持\n• 水だけ透明度を調整可能\n• 草側面の黒化防止\n• 方解石・クォーツは非鏡面\n• 洞窟の暗視級表示を切替可能\n• ライトブロック0～15を実発光対応\n• GitHubから安全確認後に自動更新\n• 変更前に自動バックアップ",
             bg="#253a30",
             fg="#dce7e1",
             font=("Yu Gothic UI", 9),
@@ -1192,7 +1195,7 @@ class ManagerApp:
 
         self.actions = tk.Frame(self.right, bg=self.BG)
         self.actions.pack(fill="x")
-        self.install_button = ModernButton(self.actions, text="▣  最新の！31を導入\n水中暗視級・ライト発光修正版", command=self.install_pack, align="left", height=62)
+        self.install_button = ModernButton(self.actions, text="▣  最新の！32を導入\nRTXライト実発光・水中暗視級修正版", command=self.install_pack, align="left", height=62)
         self.restore_button = ModernButton(self.actions, text="↶  バックアップから復元\n調整前の状態へ戻す", command=self.restore_pack, align="left", height=62)
         self.folder_button = ModernButton(self.actions, text="▤  パックフォルダーを開く\n保存場所を確認", command=self.open_pack_folder, align="left", height=62)
         self.launch_button = ModernButton(self.actions, text="▶  Minecraft RTXを起動\n調整後にワールドへ入る", variant="launch", command=self.launch_minecraft, align="left", height=62)
@@ -1377,7 +1380,7 @@ class ManagerApp:
         raw = str(error) or error.__class__.__name__
         lowered = raw.lower()
         operation = {
-            "install": "！31の導入", "apply": "設定の適用", "restore": "復元",
+            "install": "！32の導入", "apply": "設定の適用", "restore": "復元",
             "export": "書き出し", "delete": "削除", "scan": "パック検索",
             "folder": "フォルダー表示", "launch": "Minecraftの起動", "update": "自動更新",
         }.get(context, "処理")
@@ -1386,7 +1389,7 @@ class ManagerApp:
         if isinstance(error, PermissionError) or "access is denied" in lowered or "permission" in lowered:
             return "ACCESS_DENIED", "ファイルを変更できません", f"{operation}中にWindowsから拒否されました。", "Minecraftを完全に終了して10秒ほど待ち、もう一度実行してください。"
         if isinstance(error, FileNotFoundError):
-            return "FILE_NOT_FOUND", "必要なファイルがありません", raw, "Minecraftを一度起動して終了し、再診断してください。パックの場合は！31を入れ直してください。"
+            return "FILE_NOT_FOUND", "必要なファイルがありません", raw, "Minecraftを一度起動して終了し、再診断してください。パックの場合は！32を入れ直してください。"
         if "space" in lowered or "enospc" in lowered or "空き容量" in raw:
             return "DISK_FULL", "空き容量が不足しています", f"{operation}に必要なファイルを保存できませんでした。", "Windowsの空き容量を増やしてからやり直してください。"
         return f"{context.upper()}_FAILED", f"{operation}でエラーが発生しました", raw[:180], "もう一度試してください。直らない場合は、この診断欄のスクリーンショットを送ってください。"
@@ -1449,7 +1452,7 @@ class ManagerApp:
                 existing.append(root)
             packs += scan_pack_directory(root / "resource_packs", label, "resource_packs", self.scan_issues)
             packs += scan_pack_directory(root / "development_resource_packs", label, "development_resource_packs", self.scan_issues)
-        packs.sort(key=lambda pack: (0 if "！31" in pack.name else 1, pack.name))
+        packs.sort(key=lambda pack: (0 if "！32" in pack.name else 1, pack.name))
         self.packs = packs
         self.pack_combo["values"] = [pack.label for pack in packs]
         if packs:
@@ -1461,7 +1464,7 @@ class ManagerApp:
         else:
             self.pack_var.set("")
             self.select_pack(None)
-            self.set_status(0, "PBRパックが見つかりません。先に！31を導入してください。")
+            self.set_status(0, "PBRパックが見つかりません。先に！32を導入してください。")
         self.run_diagnosis(existing)
 
     def run_diagnosis(self, existing: list[Path] | None = None) -> None:
@@ -1482,17 +1485,25 @@ class ManagerApp:
             self.report("warning", "重複したパックを検出しました", " / ".join(pack.folder for pack in duplicate), "古い方を赤い削除ボタンでゴミ箱へ移動し、1つだけ残してください。", "DUPLICATE_PACK_UUID")
             return
         if not self.packs:
-            self.report("warning", "RTX対応パックがありません", "Minecraftの保存場所は正常です。", "「最新の！31を導入」を押してください。", "PBR_PACK_NOT_FOUND")
+            self.report("warning", "RTX対応パックがありません", "Minecraftの保存場所は正常です。", "「最新の！32を導入」を押してください。", "PBR_PACK_NOT_FOUND")
             return
         if self.selected:
             light_set = self.selected.path / "textures" / "items" / "light_block_15.texture_set.json"
+            blocks_path = self.selected.path / "blocks.json"
+            local_light_path = self.selected.path / "local_lighting" / "local_lighting.json"
             try:
                 entry = read_json(light_set).get("minecraft:texture_set", {})
-                fixed = "metalness_emissive_roughness" in entry
+                blockshape = read_json(blocks_path).get("light_block", {}).get("blockshape")
+                local_entry = read_json(local_light_path).get("minecraft:local_light_settings", {}).get("minecraft:light_block", {})
+                fixed = (
+                    "metalness_emissive_roughness" in entry
+                    and blockshape in {"lantern", "torch", "end_rod"}
+                    and local_entry.get("light_type") == "static_light"
+                )
             except Exception:
                 fixed = False
             if not fixed:
-                self.report("warning", "ライトブロックが未修正です", "選択中のパックにはRTX用ライトブロック発光設定がありません。", "「選択パックに調整を適用」を押すと、自動でライト0～15を修正します。", "LIGHT_BLOCK_FIX_MISSING")
+                self.report("warning", "ライトブロックの実発光修正がありません", "アイコン発光だけでは周囲を照らせません。RTX形状回避策またはVibrant Visuals照明設定が不足しています。", "「選択パックに調整を適用」を押すと、ライト0～15の実発光修正を追加します。", "LIGHT_BLOCK_FIX_MISSING")
                 return
             fog_path = self.selected.path / "fogs" / "overworld_fog.json"
             try:
@@ -1505,12 +1516,12 @@ class ManagerApp:
             if not water_fixed:
                 self.report("warning", "水中の透明度が未設定です", "選択中のパックには水中専用の見通し設定がありません。", "水の透明度を選び、「選択パックに調整を適用」を押してください。", "WATER_CLARITY_MISSING")
                 return
-        self.report("success", "問題は見つかりません", f"{len(self.packs)}個のPBRパック、ライトブロック、水中透明度設定を確認しました。", "このまま設定を調整できます。", "SYSTEM_OK")
+        self.report("success", "問題は見つかりません", f"{len(self.packs)}個のPBRパック、ライトブロック実発光、水中透明度設定を確認しました。", "このまま設定を調整できます。", "SYSTEM_OK")
 
     def select_pack(self, pack: PackInfo | None) -> None:
         self.selected = pack
         self.current_name_var.set(pack.name if pack else "パックが選択されていません")
-        self.current_path_var.set(str(pack.path) if pack else "「最新の！31を導入」を押してください。")
+        self.current_path_var.set(str(pack.path) if pack else "「最新の！32を導入」を押してください。")
         self.update_button_states()
 
     def on_pack_selected(self, _event=None) -> None:
@@ -1695,9 +1706,9 @@ class ManagerApp:
             return install_pack_archive(EMBEDDED_PACK, preview, PACK_FOLDER)
         def success(destination):
             self.refresh_packs()
-            self.report("success", "！31を導入しました", str(destination), "Minecraftで古い！30を無効化し、！31を有効化してください。", "INSTALL_OK")
-            messagebox.showinfo("導入できました", "水中暗視級・ライトブロック発光修正版！31を導入しました。\n\nMinecraftで古い！30を無効化し、！31を有効化してください。")
-        self.start_task("install", "！31を導入しています", worker, success)
+            self.report("success", "！32を導入しました", str(destination), "Minecraftで古い！31を無効化し、！32を有効化してください。", "INSTALL_OK")
+            messagebox.showinfo("導入できました", "RTXライトブロック実発光・水中暗視級修正版！32を導入しました。\n\nMinecraftで古い！31を無効化し、！32を有効化してください。")
+        self.start_task("install", "！32を導入しています", worker, success)
 
     def apply_tuning(self) -> None:
         if not self.selected:
@@ -1719,7 +1730,7 @@ class ManagerApp:
                 tune_heightmap(path, settings["density"], settings["anti_flicker"])
                 if index % 60 == 0:
                     self.thread_status(15 + 20 * index / max(1, len(heightmaps)), f"凹凸を調整しています… {index}/{len(heightmaps)}")
-            self.thread_status(36, "ライトブロック0～15を発光対応にしています…")
+            self.thread_status(36, "ライトブロック0～15を実発光対応にしています…")
             ensure_light_block_assets(pack.path)
             tune_texture_sets(pack.path, settings, self.thread_status)
             self.thread_status(80, "水の透明度を調整しています…")
@@ -1740,6 +1751,8 @@ class ManagerApp:
                         "grass_side_black_fix_preserved": True,
                         "calcite_quartz_non_mirror": True,
                         "light_blocks_0_to_15_emissive": True,
+                        "light_block_rtx_blockshape_workaround": True,
+                        "light_block_vibrant_visuals_static_light": True,
                         "cave_night_vision": bool(settings["night_vision"]),
                     },
                 },
@@ -1748,8 +1761,8 @@ class ManagerApp:
         def success(_):
             self.set_status(100, "調整が完了しました。")
             night_vision = "ON" if settings["night_vision"] else "OFF"
-            self.report("success", "設定の適用が完了しました", f"凹凸・反射・霧・水・照明・ライトブロックを調整しました。暗所の暗視級表示: {night_vision}", "Minecraftでワールドへ入り直してください。", "APPLY_OK")
-            messagebox.showinfo("調整できました", f"水の透明度と水中の見通しを調整しました。\n洞窟・暗所の暗視級表示: {night_vision}\nライトブロック0～15も発光対応済みです。\n\nMinecraftでワールドへ入り直してください。")
+            self.report("success", "設定の適用が完了しました", f"凹凸・反射・霧・水・照明・ライトブロック実発光を調整しました。暗所の暗視級表示: {night_vision}", "Minecraftを完全に終了してから起動し、ワールドへ入り直してください。", "APPLY_OK")
+            messagebox.showinfo("調整できました", f"水の透明度と水中の見通しを調整しました。\n洞窟・暗所の暗視級表示: {night_vision}\nライトブロック0～15のRTX実発光回避策も適用済みです。\n\nMinecraftを完全に終了してから起動し、ワールドへ入り直してください。")
         self.start_task("apply", "設定を適用しています", worker, success)
 
     def restore_pack(self) -> None:
@@ -1813,7 +1826,7 @@ class ManagerApp:
     def launch_minecraft(self) -> None:
         try:
             os.startfile("minecraft://")
-            self.report("success", "Minecraftを起動しました", "Minecraftへ起動命令を送りました。", "ビデオ設定でレイトレースを選び、！31を有効化してください。", "MINECRAFT_STARTED")
+            self.report("success", "Minecraftを起動しました", "Minecraftへ起動命令を送りました。", "ビデオ設定でレイトレースを選び、！32を有効化してください。", "MINECRAFT_STARTED")
         except Exception:
             try:
                 subprocess.Popen(["cmd", "/c", "start", "", "minecraft://"], shell=False)
