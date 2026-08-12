@@ -2,12 +2,12 @@
   "schema_version": 1,
   "repository": "koresuke26/my-original-rtx-manager-updates",
   "channel": "stable",
-  "published_at": "2026-08-10T15:20:32+09:00",
+  "published_at": "2026-08-12T00:00:00+09:00",
   "app": {
-    "version": "2.7.0",
+    "version": "2.8.0",
     "file_name": "My Original RTX Manager.pyw",
     "url": "https://raw.githubusercontent.com/koresuke26/my-original-rtx-manager-updates/main/My%20Original%20RTX%20Manager.pyw",
-    "sha256": "443adc83d8c3240ab514df7fff650b5d3a6d822317939a307eaefa04c33c955f"
+    "sha256": "778f0a34c70882de88185bcc3aa65dbd45cf5d7b8c8032103945c05221f37816"
   },
   "pack": {
     "number": 34,
@@ -20,6 +20,7 @@
     "header_uuid": "d50e4372-6f38-4cf6-9a3f-20a1c93585a0"
   },
   "notes": [
+    "参考画面に合わせてヘッダー・設定グループ・操作カードを整理",
     "水の透明度を全GPUプロファイルで100%へ変更",
     "水中フォグ密度・散乱・吸収をすべて0へ変更",
     "洞窟最低環境光を公式上限5.0 luxへ変更",
