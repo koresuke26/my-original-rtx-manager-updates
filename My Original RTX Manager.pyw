@@ -25,7 +25,7 @@ from tkinter import filedialog, messagebox, ttk
 
 
 APP_NAME = "My Original RTX Manager"
-APP_VERSION_NUMBER = "2.8.1"
+APP_VERSION_NUMBER = "2.9.0"
 APP_VERSION = f"{APP_VERSION_NUMBER} Python"
 PACK_NUMBER = 34
 PACK_FOLDER = "My_Original_Visual_Pack_34"
@@ -1049,7 +1049,7 @@ class ManagerApp:
     def __init__(self, root: tk.Tk) -> None:
         self.root = root
         self.root.title(APP_NAME)
-        self.root.geometry("1680x940")
+        self.root.geometry("1680x900")
         self.root.minsize(920, 600)
         self.root.configure(bg=self.BG)
         self.packs: list[PackInfo] = []
@@ -1108,48 +1108,48 @@ class ManagerApp:
         style.configure("Horizontal.TProgressbar", troughcolor="#303638", background=self.GREEN, bordercolor="#303638", lightcolor=self.GREEN, darkcolor=self.GREEN)
 
     def build_ui(self) -> None:
-        self.header = tk.Frame(self.root, bg="#101719", height=68, highlightthickness=0)
+        self.header = tk.Frame(self.root, bg="#101719", height=56, highlightthickness=0)
         self.header.grid(row=0, column=0, columnspan=2, sticky="ew")
         self.header.grid_propagate(False)
 
-        brand = tk.Frame(self.header, bg="#151817", width=38, height=38, highlightbackground="#46504b", highlightthickness=1)
-        brand.pack(side="left", padx=(24, 12))
+        brand = tk.Frame(self.header, bg="#151817", width=32, height=32, highlightbackground="#46504b", highlightthickness=1)
+        brand.pack(side="left", padx=(20, 10))
         brand.pack_propagate(False)
         blocks = tk.Frame(brand, bg="#151817")
         blocks.pack(expand=True)
         for row in range(2):
             for column in range(2):
                 color = self.GREEN if row == column else "#376a4c"
-                tk.Frame(blocks, width=10, height=10, bg=color).grid(row=row, column=column, padx=2, pady=2)
+                tk.Frame(blocks, width=8, height=8, bg=color).grid(row=row, column=column, padx=2, pady=2)
 
         self.header_titles = tk.Frame(self.header, bg="#101719")
-        self.header_titles.pack(side="left", pady=10)
-        tk.Label(self.header_titles, text=APP_NAME, bg="#101719", fg=self.TEXT, font=("Yu Gothic UI", 19, "bold")).pack(anchor="w")
+        self.header_titles.pack(side="left", pady=6)
+        tk.Label(self.header_titles, text=APP_NAME, bg="#101719", fg=self.TEXT, font=("Yu Gothic UI", 16, "bold")).pack(anchor="w")
         self.subtitle_label = tk.Label(
             self.header_titles,
             text="Bedrock RTX・Vibrant Visuals パック管理（Python版）",
             bg="#101719",
             fg=self.MUTED,
-            font=("Yu Gothic UI", 9),
+            font=("Yu Gothic UI", 8),
         )
         self.subtitle_label.pack(anchor="w")
 
         self.header_actions = tk.Frame(self.header, bg="#101719")
-        self.header_actions.pack(side="right", padx=22)
+        self.header_actions.pack(side="right", padx=18)
         self.gpu_selector_shell = tk.Frame(
             self.header_actions,
-            bg="#253a30",
+            bg="#1c2324",
             padx=8,
-            pady=4,
-            highlightbackground="#3f7657",
+            pady=3,
+            highlightbackground=self.BORDER,
             highlightthickness=1,
         )
         tk.Label(
             self.gpu_selector_shell,
-            text="GPU推奨設定",
-            bg="#253a30",
-            fg="#9fd9b7",
-            font=("Yu Gothic UI", 8, "bold"),
+            text="GPU",
+            bg="#1c2324",
+            fg=self.MUTED,
+            font=("Yu Gothic UI", 9, "bold"),
         ).pack(side="left", padx=(2, 7))
         self.gpu_combo = ttk.Combobox(
             self.gpu_selector_shell,
@@ -1161,26 +1161,26 @@ class ManagerApp:
         self.gpu_combo.pack(side="left")
         self.gpu_combo.bind("<<ComboboxSelected>>", self.on_gpu_selected)
         self.gpu_selector_shell.pack(side="left", padx=(0, 8))
-        self.recommend_button = ModernButton(self.header_actions, text="推奨設定を適用", command=self.reset_values, variant="primary", width=145, height=38)
+        self.recommend_button = ModernButton(self.header_actions, text="GPU推奨値を読み込む", command=self.reset_values, variant="secondary", width=170, height=34)
         self.recommend_button.pack(side="left", padx=(0, 8))
-        self.help_button = ModernButton(self.header_actions, text="?", command=self.show_help, variant="quiet", width=40, height=38)
+        self.help_button = ModernButton(self.header_actions, text="?", command=self.show_help, variant="quiet", width=34, height=34)
         self.help_button.pack(side="left")
 
-        self.toolbar = tk.Frame(self.root, bg="#202426", padx=18, pady=10, highlightbackground="#343a3d", highlightthickness=1)
+        self.toolbar = tk.Frame(self.root, bg="#202426", padx=16, pady=7, highlightbackground="#343a3d", highlightthickness=1)
         self.toolbar.grid(row=1, column=0, columnspan=2, sticky="ew")
-        self.select_button = ModernButton(self.toolbar, text="⌕  パックを手動選択", command=self.select_folder, variant="secondary", height=44)
+        self.select_button = ModernButton(self.toolbar, text="⌕  パックを手動選択", command=self.select_folder, variant="secondary", height=38)
 
-        self.preview_shell = tk.Frame(self.toolbar, bg="#2b3032", highlightbackground="#3a4143", highlightthickness=1, padx=13, pady=8)
+        self.preview_shell = tk.Frame(self.toolbar, bg="#2b3032", highlightbackground="#3a4143", highlightthickness=1, padx=11, pady=5)
         self.preview_button = ToggleSwitch(self.preview_shell, self.preview_var, command=self.refresh_packs, accent=self.GREEN, accent_dark=self.GREEN_DARK)
         self.preview_button.pack(side="left")
-        tk.Label(self.preview_shell, text="Minecraft Preview", bg="#2b3032", fg=self.TEXT, font=("Yu Gothic UI", 10, "bold")).pack(side="left", padx=(9, 2))
+        tk.Label(self.preview_shell, text="Minecraft Preview", bg="#2b3032", fg=self.TEXT, font=("Yu Gothic UI", 9, "bold")).pack(side="left", padx=(8, 2))
 
-        self.pack_shell = tk.Frame(self.toolbar, bg="#2b3032", highlightbackground="#3a4143", highlightthickness=1, padx=12, pady=6)
-        tk.Label(self.pack_shell, text="使用するパック", bg="#2b3032", fg=self.TEXT, font=("Yu Gothic UI", 9, "bold")).pack(side="left", padx=(0, 9))
+        self.pack_shell = tk.Frame(self.toolbar, bg="#2b3032", highlightbackground="#3a4143", highlightthickness=1, padx=10, pady=4)
+        tk.Label(self.pack_shell, text="使用するパック", bg="#2b3032", fg=self.TEXT, font=("Yu Gothic UI", 10, "bold")).pack(side="left", padx=(0, 9))
         self.pack_combo = ttk.Combobox(self.pack_shell, textvariable=self.pack_var, state="readonly")
         self.pack_combo.pack(side="left", fill="x", expand=True)
         self.pack_combo.bind("<<ComboboxSelected>>", self.on_pack_selected)
-        self.refresh_button = ModernButton(self.pack_shell, text="↻", command=self.refresh_packs, variant="quiet", width=42, height=36)
+        self.refresh_button = ModernButton(self.pack_shell, text="↻", command=self.refresh_packs, variant="quiet", width=38, height=32)
         self.refresh_button.pack(side="left", padx=(8, 0))
         self.layout_toolbar(False)
 
@@ -1189,7 +1189,7 @@ class ManagerApp:
         self.canvas.configure(yscrollcommand=scrollbar.set)
         self.canvas.grid(row=2, column=0, sticky="nsew")
         scrollbar.grid(row=2, column=1, sticky="ns")
-        self.content = tk.Frame(self.canvas, bg=self.BG, padx=20, pady=18)
+        self.content = tk.Frame(self.canvas, bg=self.BG, padx=16, pady=10)
         self.canvas_window = self.canvas.create_window((0, 0), window=self.content, anchor="nw")
         self.content.bind("<Configure>", lambda _: self.canvas.configure(scrollregion=self.canvas.bbox("all")))
         self.canvas.bind("<Configure>", self.on_canvas_resize)
@@ -1204,76 +1204,75 @@ class ManagerApp:
         self.build_left()
         self.build_right()
 
-        status = tk.Frame(self.root, bg="#101719", padx=20, pady=7, highlightbackground="#343a3d", highlightthickness=1)
+        status = tk.Frame(self.root, bg="#101719", padx=18, pady=5, highlightbackground="#343a3d", highlightthickness=1)
         status.grid(row=3, column=0, columnspan=2, sticky="ew")
         ttk.Progressbar(status, variable=self.progress_var, maximum=100).pack(fill="x")
-        tk.Label(status, textvariable=self.status_var, bg="#202426", fg=self.MUTED, font=("Yu Gothic UI", 9)).pack(pady=(5, 0))
-        self.status_detail = tk.Label(status, text=f"● ！34準備中　　✓ 水透明度100%　　✓ 洞窟環境光MAX　　App {APP_VERSION_NUMBER}", bg="#101719", fg=self.MUTED, font=("Yu Gothic UI", 8))
-        self.status_detail.pack(anchor="w", pady=(4, 0))
+        status_line = tk.Frame(status, bg="#101719")
+        status_line.pack(fill="x", pady=(4, 0))
+        tk.Label(status_line, textvariable=self.status_var, bg="#101719", fg=self.MUTED, font=("Yu Gothic UI", 9)).pack(side="left")
+        self.status_detail = tk.Label(status_line, text=f"● 準備中　｜　水透明度100%　｜　洞窟環境光MAX　｜　RTX 4060　｜　App {APP_VERSION_NUMBER}", bg="#101719", fg=self.MUTED, font=("Yu Gothic UI", 9))
+        self.status_detail.pack(side="left", padx=(18, 0))
+        ModernButton(status_line, text="詳細ログを開く", command=self.show_diagnostic_history, variant="quiet", width=120, height=28).pack(side="right")
 
         self.root.rowconfigure(2, weight=1)
         self.root.columnconfigure(0, weight=1)
 
     def build_left(self) -> None:
-        tk.Label(self.left, text="現在のパック情報", bg=self.PANEL, fg=self.GREEN, font=("Yu Gothic UI", 10, "bold")).pack(anchor="w")
-        tk.Label(self.left, textvariable=self.current_name_var, bg=self.PANEL, fg=self.TEXT, font=("Yu Gothic UI", 16, "bold"), wraplength=310, justify="left").pack(anchor="w", pady=(6, 4))
-        tk.Label(self.left, textvariable=self.current_path_var, bg=self.PANEL, fg=self.MUTED, font=("Yu Gothic UI", 8), wraplength=270, justify="left").pack(anchor="w")
+        tk.Label(self.left, text="現在のパック", bg=self.PANEL, fg=self.MUTED, font=("Yu Gothic UI", 10, "bold")).pack(anchor="w")
+        tk.Label(self.left, textvariable=self.current_name_var, bg=self.PANEL, fg=self.TEXT, font=("Yu Gothic UI", 15, "bold"), wraplength=280, justify="left").pack(anchor="w", pady=(6, 4))
+        tk.Label(self.left, textvariable=self.current_path_var, bg=self.PANEL, fg=self.MUTED, font=("Yu Gothic UI", 9), wraplength=270, justify="left").pack(anchor="w")
 
-        protection = tk.Frame(self.left, bg="#253a30", highlightbackground="#3e6d51", highlightthickness=1, padx=13, pady=11)
-        protection.pack(fill="x", pady=13)
-        tk.Label(protection, text="✓  今回の保護設定", bg="#253a30", fg="#d8ffe7", font=("Yu Gothic UI", 10, "bold")).pack(anchor="w", pady=(0, 6))
-        tk.Label(
-            protection,
-            text="• 公式16pxのRGB色を維持\n• 水の透明度100%\n• 水中フォグ・散乱・吸収0\n• 洞窟の最低環境光を上限5.0\n• 空の間接光を上限1.0\n• ライトは手持ち時だけ標準表示\n• GitHubから安全確認後に自動更新\n• 変更前に自動バックアップ",
-            bg="#253a30",
-            fg="#dce7e1",
-            font=("Yu Gothic UI", 9),
-            justify="left",
-        ).pack(anchor="w")
+        protection = tk.Frame(self.left, bg="#202628", highlightbackground=self.BORDER, highlightthickness=1, padx=12, pady=9)
+        protection.pack(fill="x", pady=11)
+        protection_header = tk.Frame(protection, bg="#202628")
+        protection_header.pack(fill="x")
+        tk.Label(protection_header, text="✓  保護設定：有効", bg="#202628", fg=self.GREEN, font=("Yu Gothic UI", 10, "bold")).pack(side="left")
+        ModernButton(protection_header, text="詳細", command=self.show_protection_details, variant="quiet", width=52, height=28).pack(side="right")
+        tk.Label(protection, text="RGB色・水100%・洞窟環境光MAXを保護しています", bg="#202628", fg=self.MUTED, font=("Yu Gothic UI", 9), wraplength=250, justify="left").pack(anchor="w", pady=(6, 0))
 
-        self.diag_frame = tk.Frame(self.left, bg="#202628", highlightbackground="#46606a", highlightthickness=1, padx=12, pady=11)
+        self.diag_frame = tk.Frame(self.left, bg="#202628", highlightbackground="#46606a", highlightthickness=1, padx=12, pady=10)
         self.diag_frame.pack(fill="x", pady=(0, 10))
-        tk.Label(self.diag_frame, text="トラブル診断", bg="#202628", fg=self.BLUE, font=("Yu Gothic UI", 9, "bold")).pack(anchor="w", pady=(0, 5))
+        tk.Label(self.diag_frame, text="トラブル診断", bg="#202628", fg=self.BLUE, font=("Yu Gothic UI", 10, "bold")).pack(anchor="w", pady=(0, 5))
         self.diag_title = tk.Label(self.diag_frame, textvariable=self.diag_title_var, bg="#202628", fg=self.BLUE, font=("Yu Gothic UI", 11, "bold"), anchor="w")
         self.diag_title.pack(fill="x")
-        tk.Label(self.diag_frame, textvariable=self.diag_message_var, bg="#202628", fg=self.TEXT, font=("Yu Gothic UI", 9), wraplength=295, justify="left").pack(anchor="w", pady=(6, 5))
+        tk.Label(self.diag_frame, textvariable=self.diag_message_var, bg="#202628", fg=self.TEXT, font=("Yu Gothic UI", 10), wraplength=270, justify="left").pack(anchor="w", pady=(6, 5))
         solution = tk.Frame(self.diag_frame, bg="#1a1f20", padx=9, pady=7)
         solution.pack(fill="x")
-        tk.Label(solution, text="対処方法", bg="#1a1f20", fg=self.GREEN, font=("Yu Gothic UI", 8, "bold")).pack(anchor="w")
-        tk.Label(solution, textvariable=self.diag_action_var, bg="#1a1f20", fg=self.MUTED, font=("Yu Gothic UI", 8), wraplength=275, justify="left").pack(anchor="w")
+        tk.Label(solution, text="対処方法", bg="#1a1f20", fg=self.MUTED, font=("Yu Gothic UI", 9, "bold")).pack(anchor="w")
+        tk.Label(solution, textvariable=self.diag_action_var, bg="#1a1f20", fg=self.MUTED, font=("Yu Gothic UI", 9), wraplength=255, justify="left").pack(anchor="w")
         meta = tk.Frame(self.diag_frame, bg="#202628")
         meta.pack(fill="x", pady=(6, 4))
-        tk.Label(meta, textvariable=self.diag_code_var, bg="#202628", fg=self.BLUE, font=("Consolas", 8)).pack(side="left")
-        tk.Label(meta, textvariable=self.diag_time_var, bg="#202628", fg=self.MUTED, font=("Yu Gothic UI", 8)).pack(side="right")
-        ModernButton(self.diag_frame, text="↻  今すぐ診断", command=self.refresh_packs, variant="quiet", height=36).pack(fill="x", pady=(3, 6))
+        tk.Label(meta, textvariable=self.diag_code_var, bg="#202628", fg=self.BLUE, font=("Consolas", 9)).pack(side="left")
+        tk.Label(meta, textvariable=self.diag_time_var, bg="#202628", fg=self.MUTED, font=("Yu Gothic UI", 9)).pack(side="right")
+        diag_actions = tk.Frame(self.diag_frame, bg="#202628")
+        diag_actions.pack(fill="x", pady=(3, 0))
+        ModernButton(diag_actions, text="↻  今すぐ診断", command=self.refresh_packs, variant="quiet", height=34).pack(side="left", fill="x", expand=True, padx=(0, 4))
+        ModernButton(diag_actions, text="詳細ログ", command=self.show_diagnostic_history, variant="quiet", width=88, height=34).pack(side="right")
         self.history = tk.Listbox(self.diag_frame, height=4, bg="#1d2122", fg=self.MUTED, selectbackground=self.GREEN_DARK, borderwidth=0, font=("Yu Gothic UI", 8))
-        self.history.pack(fill="x")
-        warning = tk.Frame(self.left, bg="#343126", highlightbackground="#665b3c", highlightthickness=1, padx=11, pady=9)
-        warning.pack(fill="x", pady=(1, 10))
-        tk.Label(warning, text="重要", bg="#343126", fg=self.YELLOW, font=("Yu Gothic UI", 9, "bold")).pack(anchor="w")
-        tk.Label(warning, text="適用するときはMinecraftを終了してください。反映にはワールドへの入り直しが必要です。", bg="#343126", fg="#ddd6c4", font=("Yu Gothic UI", 8), wraplength=290, justify="left").pack(anchor="w", pady=(3, 0))
-        tk.Label(self.left, text=f"App Version  {APP_VERSION}", bg=self.PANEL, fg=self.MUTED, font=("Yu Gothic UI", 8)).pack(anchor="e", pady=(2, 0))
+        self.left_details_button = ModernButton(self.left, text="保護設定・注意事項の詳細", command=self.show_protection_details, variant="quiet", height=32)
+        self.left_details_button.pack(fill="x", pady=(0, 8))
+        tk.Label(self.left, text=f"App Version  {APP_VERSION}", bg=self.PANEL, fg=self.MUTED, font=("Yu Gothic UI", 9)).pack(anchor="e", pady=(0, 0))
 
     def build_right(self) -> None:
         quick = tk.Frame(self.right, bg=self.BG)
-        quick.pack(fill="x", pady=(0, 10))
-        tk.Label(quick, text="ビジュアル設定", bg=self.BG, fg=self.TEXT, font=("Yu Gothic UI", 16, "bold")).pack(side="left")
-        tk.Label(quick, text="リアルタイムでMinecraftの見え方を調整します", bg=self.BG, fg=self.MUTED, font=("Yu Gothic UI", 9)).pack(side="left", padx=10, pady=(5, 0))
-        ModernButton(quick, text="↶  推奨値に戻す", command=self.reset_values, variant="secondary", width=160, height=40).pack(side="right")
+        quick.pack(fill="x", pady=(0, 8))
+        tk.Label(quick, text="ビジュアル設定", bg=self.BG, fg=self.TEXT, font=("Yu Gothic UI", 15, "bold")).pack(side="left")
+        tk.Label(quick, text="Minecraftに適用する見え方を調整します", bg=self.BG, fg=self.MUTED, font=("Yu Gothic UI", 10)).pack(side="left", padx=10, pady=(4, 0))
+        ModernButton(quick, text="↶  推奨値に戻す", command=self.reset_values, variant="quiet", width=150, height=34).pack(side="right")
 
-        self.settings_shell = tk.Frame(self.right, bg=self.PANEL, highlightbackground=self.BORDER, highlightthickness=1, padx=18, pady=8)
+        self.settings_shell = tk.Frame(self.right, bg=self.BG)
         self.settings_shell.pack(fill="x")
-        self.left_settings = tk.Frame(self.settings_shell, bg=self.PANEL, padx=10, pady=5)
-        self.right_settings = tk.Frame(self.settings_shell, bg=self.PANEL, padx=10, pady=5, highlightbackground="#3a4143", highlightthickness=0)
+        self.left_settings = tk.Frame(self.settings_shell, bg=self.PANEL, padx=14, pady=9, highlightbackground=self.BORDER, highlightthickness=1)
+        self.right_settings = tk.Frame(self.settings_shell, bg=self.PANEL, padx=14, pady=9, highlightbackground=self.BORDER, highlightthickness=1)
         self.material_settings = self.right_settings
-        self.stability_settings = tk.Frame(self.settings_shell, bg=self.PANEL, padx=10, pady=5)
-        self.left_settings.grid(row=0, column=0, sticky="nsew", padx=(0, 12))
-        self.right_settings.grid(row=0, column=1, sticky="nsew", padx=(12, 0))
-        self.stability_settings.grid(row=0, column=2, sticky="nsew", padx=(12, 0))
+        self.stability_settings = tk.Frame(self.settings_shell, bg=self.PANEL, padx=14, pady=9, highlightbackground=self.BORDER, highlightthickness=1)
+        self.left_settings.grid(row=0, column=0, sticky="nsew", padx=(0, 6))
+        self.right_settings.grid(row=0, column=1, sticky="nsew", padx=6)
+        self.stability_settings.grid(row=0, column=2, sticky="nsew", padx=(6, 0))
         self.settings_shell.columnconfigure((0, 1, 2), weight=1, uniform="settings")
-        tk.Label(self.left_settings, text="☀  光・視界", bg=self.PANEL, fg=self.YELLOW, font=("Yu Gothic UI", 11, "bold")).pack(anchor="w", pady=(4, 3))
-        tk.Label(self.right_settings, text="◇  質感（マテリアル）", bg=self.PANEL, fg=self.GREEN, font=("Yu Gothic UI", 11, "bold")).pack(anchor="w", pady=(4, 3))
-        tk.Label(self.stability_settings, text="♢  安定性・最適化", bg=self.PANEL, fg=self.GREEN, font=("Yu Gothic UI", 11, "bold")).pack(anchor="w", pady=(4, 3))
+        tk.Label(self.left_settings, text="☀  光・視界", bg=self.PANEL, fg=self.YELLOW, font=("Yu Gothic UI", 12, "bold")).pack(anchor="w", pady=(1, 5))
+        tk.Label(self.right_settings, text="◇  質感（マテリアル）", bg=self.PANEL, fg=self.BLUE, font=("Yu Gothic UI", 12, "bold")).pack(anchor="w", pady=(1, 5))
+        tk.Label(self.stability_settings, text="♢  安定性・最適化", bg=self.PANEL, fg=self.MUTED, font=("Yu Gothic UI", 12, "bold")).pack(anchor="w", pady=(1, 5))
         self.add_slider(self.left_settings, "霧の濃さ", self.fog_var, 0, 100, "右ほど独自の霧が濃くなります", "")
         self.add_slider(self.left_settings, "発光の明るさ", self.emissive_var, 0, 200, "光源とライトブロックの発光を調整", "%")
         self.add_slider(self.right_settings, "金属・宝石の鏡面反射", self.mirror_var, 0, 100, "色を残したまま反射を変更", "%")
@@ -1286,31 +1285,36 @@ class ManagerApp:
         self.add_toggle(self.stability_settings, "ちらつき防止（アンチフリッカー）", "遠景の細かな凹凸のちらつきを抑えます", self.anti_var)
 
         apply_row = tk.Frame(self.right, bg=self.BG)
-        apply_row.pack(fill="x", pady=12)
+        apply_row.pack(fill="x", pady=10)
         apply_row.columnconfigure(0, weight=1)
-        self.apply_button = ModernButton(apply_row, text="⚙  設定を適用", variant="primary", command=self.apply_tuning, height=52)
+        self.apply_button = ModernButton(apply_row, text="✓  変更をMinecraftへ適用", variant="primary", command=self.apply_tuning, height=56)
         self.apply_button.grid(row=0, column=0, sticky="ew")
+        self.other_button = ModernButton(apply_row, text="⋯  その他", command=self.show_more_actions, variant="secondary", width=112, height=56)
+        self.other_button.grid(row=0, column=1, padx=(8, 0))
         self.export_button = ModernButton(apply_row, text="⇩  設定を書き出す", command=self.export_pack, width=165, height=52)
-        self.export_button.grid(row=0, column=1, padx=8)
         self.delete_button = ModernButton(apply_row, text="♲  削除", variant="danger", command=self.delete_pack, width=92, height=52)
-        self.delete_button.grid(row=0, column=2)
+
+        tools_header = tk.Frame(self.right, bg=self.BG)
+        tools_header.pack(fill="x", pady=(0, 4))
+        tk.Label(tools_header, text="管理ツール", bg=self.BG, fg=self.TEXT, font=("Yu Gothic UI", 13, "bold")).pack(side="left")
+        tk.Label(tools_header, text="パックの管理と各種ツール", bg=self.BG, fg=self.MUTED, font=("Yu Gothic UI", 9)).pack(side="left", padx=10, pady=(3, 0))
 
         self.actions = tk.Frame(self.right, bg=self.BG)
         self.actions.pack(fill="x")
-        self.install_button = ModernButton(self.actions, text="▣  最新版をインストール\n現在：！34 / 水・洞窟MAX", command=self.install_pack, align="left", height=62)
-        self.restore_button = ModernButton(self.actions, text="↶  バックアップから復元\n調整前の状態へ戻す", command=self.restore_pack, align="left", height=62)
-        self.folder_button = ModernButton(self.actions, text="▤  パックフォルダーを開く\n保存場所を確認", command=self.open_pack_folder, align="left", height=62)
-        self.launch_button = ModernButton(self.actions, text="▶  Minecraft RTXを起動\n調整後にワールドへ入る", variant="launch", command=self.launch_minecraft, align="left", height=62)
+        self.install_button = ModernButton(self.actions, text="▣  最新版をインストール\n！34 水・洞窟MAX版", command=self.install_pack, align="left", height=72)
+        self.restore_button = ModernButton(self.actions, text="↶  バックアップから復元\n調整前の状態へ戻す", command=self.restore_pack, align="left", height=72)
+        self.folder_button = ModernButton(self.actions, text="▤  パックフォルダーを開く\n保存場所を確認", command=self.open_pack_folder, align="left", height=72)
+        self.launch_button = ModernButton(self.actions, text="▶  Minecraft RTXを起動\n調整後にワールドへ入る", variant="launch", command=self.launch_minecraft, align="left", height=72)
         for index, button in enumerate((self.install_button, self.restore_button, self.folder_button, self.launch_button)):
-            button.grid(row=index // 2, column=index % 2, sticky="ew", padx=(0 if index % 2 == 0 else 5, 5 if index % 2 == 0 else 0), pady=5)
-        self.update_button = ModernButton(self.actions, text="⇩  最新版を確認・更新\nGitHubから安全確認後に自動更新", variant="secondary", command=self.check_for_updates, height=62)
-        self.update_button.grid(row=2, column=0, columnspan=2, sticky="ew", pady=5)
-        self.actions.columnconfigure((0, 1), weight=1)
-        self.action_buttons = [self.select_button, self.refresh_button, self.apply_button, self.export_button, self.delete_button, self.install_button, self.restore_button, self.folder_button, self.launch_button, self.update_button]
+            button.grid(row=0, column=index, sticky="ew", padx=(0 if index == 0 else 4, 4 if index < 3 else 0), pady=4)
+        for index, weight in enumerate((1, 1, 1, 1.45)):
+            self.actions.columnconfigure(index, weight=weight, uniform="tools")
+        self.update_button = ModernButton(self.actions, text="⇩  最新版を確認・更新", variant="secondary", command=self.check_for_updates, height=40)
+        self.action_buttons = [self.select_button, self.refresh_button, self.apply_button, self.other_button, self.export_button, self.delete_button, self.install_button, self.restore_button, self.folder_button, self.launch_button, self.update_button]
         self.update_button_states()
 
     def add_slider(self, parent, title: str, variable: tk.DoubleVar, start: int, end: int, note: str, suffix: str) -> None:
-        row = tk.Frame(parent, bg=self.PANEL, pady=6)
+        row = tk.Frame(parent, bg=self.PANEL, pady=4)
         row.pack(fill="x")
         value_var = tk.StringVar()
         def update(*_):
@@ -1320,15 +1324,15 @@ class ManagerApp:
         update()
         top = tk.Frame(row, bg=self.PANEL)
         top.pack(fill="x")
-        tk.Label(top, text=title, bg=self.PANEL, fg=self.TEXT, font=("Yu Gothic UI", 10, "bold")).pack(side="left")
-        tk.Label(top, textvariable=value_var, bg="#1d2021", fg="#e9f4ee", font=("Yu Gothic UI", 9, "bold"), padx=9, pady=3, highlightbackground="#444b4e", highlightthickness=1).pack(side="right")
+        tk.Label(top, text=title, bg=self.PANEL, fg=self.TEXT, font=("Yu Gothic UI", 11, "bold")).pack(side="left")
+        tk.Label(top, textvariable=value_var, bg="#1d2021", fg="#e9f4ee", font=("Yu Gothic UI", 10, "bold"), padx=9, pady=3, highlightbackground="#444b4e", highlightthickness=1).pack(side="right")
         step = 1 if end <= 5 else 10 if end == 200 else 5
-        ModernScale(row, variable, start, end, step, self.GREEN, self.GREEN_DARK).pack(fill="x", pady=(3, 0))
-        tk.Label(row, text=note, bg=self.PANEL, fg=self.MUTED, font=("Yu Gothic UI", 8)).pack(anchor="w")
-        tk.Frame(row, bg="#383e40", height=1).pack(fill="x", pady=(8, 0))
+        ModernScale(row, variable, start, end, step, self.BLUE, "#346e91").pack(fill="x", pady=(3, 0))
+        tk.Label(row, text=note, bg=self.PANEL, fg=self.MUTED, font=("Yu Gothic UI", 9)).pack(anchor="w")
+        tk.Frame(row, bg="#383e40", height=1).pack(fill="x", pady=(6, 0))
 
     def add_toggle(self, parent, title: str, note: str, variable: tk.BooleanVar) -> None:
-        row = tk.Frame(parent, bg=self.PANEL, pady=10)
+        row = tk.Frame(parent, bg=self.PANEL, pady=8)
         row.pack(fill="x")
         labels = tk.Frame(row, bg=self.PANEL)
         labels.pack(side="left", fill="x", expand=True)
@@ -1337,10 +1341,10 @@ class ManagerApp:
         value_var.set("ON" if variable.get() else "OFF")
         title_row = tk.Frame(labels, bg=self.PANEL)
         title_row.pack(fill="x")
-        tk.Label(title_row, text=title, bg=self.PANEL, fg=self.TEXT, font=("Yu Gothic UI", 10, "bold")).pack(side="left")
-        tk.Label(title_row, textvariable=value_var, bg="#1d2021", fg="#e9f4ee", font=("Yu Gothic UI", 8, "bold"), padx=7, pady=2).pack(side="left", padx=9)
-        tk.Label(labels, text=note, bg=self.PANEL, fg=self.MUTED, font=("Yu Gothic UI", 8)).pack(anchor="w", pady=(4, 0))
-        ToggleSwitch(row, variable, accent=self.GREEN, accent_dark=self.GREEN_DARK).pack(side="right", padx=(10, 0))
+        tk.Label(title_row, text=title, bg=self.PANEL, fg=self.TEXT, font=("Yu Gothic UI", 11, "bold")).pack(side="left")
+        tk.Label(title_row, textvariable=value_var, bg="#1d2021", fg=self.BLUE, font=("Yu Gothic UI", 9, "bold"), padx=7, pady=2).pack(side="left", padx=9)
+        tk.Label(labels, text=note, bg=self.PANEL, fg=self.MUTED, font=("Yu Gothic UI", 9)).pack(anchor="w", pady=(4, 0))
+        ToggleSwitch(row, variable, accent=self.BLUE, accent_dark="#346e91").pack(side="right", padx=(10, 0))
         tk.Frame(parent, bg="#383e40", height=1).pack(fill="x")
 
     def show_help(self) -> None:
@@ -1349,11 +1353,52 @@ class ManagerApp:
             "1. 上部で対象パックを選びます。\n"
             "2. 右上でGPUを選ぶと、そのGPU向け推奨値に変わります。\n"
             "3. 水100%・洞窟最大環境光が初期値です。\n"
-            "4. 「設定を適用」を押します。\n"
+            "4. 「変更をMinecraftへ適用」を押します。\n"
             "5. Minecraft RTXを起動してワールドへ入り直します。\n\n"
             "GPUを選んだだけではMinecraftのファイルは変更しません。\n"
             "画面が小さいときは縦に並び替わり、マウスホイールで全項目を確認できます。",
         )
+
+    def show_protection_details(self) -> None:
+        messagebox.showinfo(
+            "保護設定・注意事項",
+            "現在のパックには次の保護設定があります。\n\n"
+            "・公式16pxのRGB色を維持\n"
+            "・水の透明度100%\n"
+            "・水中フォグ・散乱・吸収0\n"
+            "・洞窟の最低環境光を上限5.0\n"
+            "・空の間接光を上限1.0\n"
+            "・ライトは手持ち時だけ標準表示\n"
+            "・GitHubから安全確認後に自動更新\n"
+            "・変更前に自動バックアップ\n\n"
+            "設定を適用するときはMinecraftを完全に終了してください。\n"
+            "反映にはワールドへの入り直しが必要です。",
+        )
+
+    def show_diagnostic_history(self) -> None:
+        entries = self.diagnostics[:20]
+        message = "\n".join(entries) if entries else "診断履歴はまだありません。"
+        messagebox.showinfo("診断履歴", message)
+
+    def show_more_actions(self) -> None:
+        menu = tk.Menu(
+            self.root,
+            tearoff=False,
+            bg=self.PANEL,
+            fg=self.TEXT,
+            activebackground="#394143",
+            activeforeground=self.TEXT,
+            font=("Yu Gothic UI", 10),
+        )
+        menu.add_command(label="設定を書き出す", command=self.export_pack, state="normal" if self.selected and not self.busy else "disabled")
+        menu.add_command(label="選択パックを削除", command=self.delete_pack, state="normal" if self.selected and not self.busy else "disabled")
+        menu.add_separator()
+        menu.add_command(label="最新版を確認・更新", command=self.check_for_updates, state="normal" if not self.busy else "disabled")
+        menu.add_command(label="保護設定・注意事項", command=self.show_protection_details)
+        try:
+            menu.tk_popup(self.other_button.winfo_rootx(), self.other_button.winfo_rooty() + self.other_button.winfo_height())
+        finally:
+            menu.grab_release()
 
     def on_mousewheel(self, event) -> None:
         amount = int(-event.delta / 120) if event.delta else 0
@@ -1413,22 +1458,20 @@ class ManagerApp:
             self.settings_shell.columnconfigure(1, weight=0)
             self.settings_shell.columnconfigure(2, weight=0)
             for index, button in enumerate((self.install_button, self.restore_button, self.folder_button, self.launch_button)):
-                button.grid_configure(row=index, column=0, columnspan=2, padx=0, pady=4)
-            self.update_button.grid_configure(row=4, column=0, columnspan=2, pady=5)
+                button.grid_configure(row=index, column=0, columnspan=4, padx=0, pady=4)
         else:
-            self.left_settings.grid(row=0, column=0, sticky="nsew", padx=(0, 12))
-            self.right_settings.grid(row=0, column=1, sticky="nsew", padx=(12, 0))
-            self.stability_settings.grid(row=0, column=2, sticky="nsew", padx=(12, 0))
+            self.left_settings.grid(row=0, column=0, sticky="nsew", padx=(0, 6))
+            self.right_settings.grid(row=0, column=1, sticky="nsew", padx=6)
+            self.stability_settings.grid(row=0, column=2, sticky="nsew", padx=(6, 0))
             self.settings_shell.columnconfigure((0, 1, 2), weight=1, uniform="settings")
             for index, button in enumerate((self.install_button, self.restore_button, self.folder_button, self.launch_button)):
                 button.grid_configure(
-                    row=index // 2,
-                    column=index % 2,
+                    row=0,
+                    column=index,
                     columnspan=1,
-                    padx=(0 if index % 2 == 0 else 5, 5 if index % 2 == 0 else 0),
-                    pady=5,
+                    padx=(0 if index == 0 else 4, 4 if index < 3 else 0),
+                    pady=4,
                 )
-            self.update_button.grid_configure(row=2, column=0, columnspan=2, pady=5)
 
     def on_canvas_resize(self, event) -> None:
         self.canvas.itemconfigure(self.canvas_window, width=max(1, event.width))
@@ -1478,6 +1521,11 @@ class ManagerApp:
         self.diag_code_var.set(code)
         now = time.strftime("%H:%M:%S")
         self.diag_time_var.set(now)
+        status_labels = {"success": "準備完了", "info": "確認中", "warning": "要確認", "error": "エラー"}
+        self.status_detail.configure(
+            text=f"● {status_labels.get(level, '確認中')}　｜　水透明度100%　｜　洞窟環境光MAX　｜　{self.gpu_var.get()}　｜　App {APP_VERSION_NUMBER}",
+            fg=colors.get(level, self.MUTED),
+        )
         row = f"{now}  {code}  {title}"
         if not self.diagnostics or self.diagnostics[0] != row:
             self.diagnostics.insert(0, row)
@@ -1495,7 +1543,7 @@ class ManagerApp:
             "folder": "フォルダー表示", "launch": "Minecraftの起動", "update": "自動更新",
         }.get(context, "処理")
         if "backup" in lowered or "バックアップ" in raw:
-            return "BACKUP_NOT_FOUND", "バックアップがありません", f"{operation}を続けられませんでした。", "先に一度「選択パックに調整を適用」を押してください。"
+            return "BACKUP_NOT_FOUND", "バックアップがありません", f"{operation}を続けられませんでした。", "先に一度「変更をMinecraftへ適用」を押してください。"
         if isinstance(error, PermissionError) or "access is denied" in lowered or "permission" in lowered:
             return "ACCESS_DENIED", "ファイルを変更できません", f"{operation}中にWindowsから拒否されました。", "Minecraftを完全に終了して10秒ほど待ち、もう一度実行してください。"
         if isinstance(error, FileNotFoundError):
@@ -1513,7 +1561,7 @@ class ManagerApp:
         for button in (getattr(self, "apply_button", None), getattr(self, "export_button", None), getattr(self, "delete_button", None), getattr(self, "restore_button", None), getattr(self, "folder_button", None)):
             if button:
                 button.configure(state=selected_state)
-        for button in (getattr(self, "select_button", None), getattr(self, "refresh_button", None), getattr(self, "install_button", None), getattr(self, "launch_button", None), getattr(self, "update_button", None)):
+        for button in (getattr(self, "select_button", None), getattr(self, "refresh_button", None), getattr(self, "install_button", None), getattr(self, "launch_button", None), getattr(self, "update_button", None), getattr(self, "other_button", None)):
             if button:
                 button.configure(state="disabled" if self.busy else "normal")
         self.pack_combo.configure(state="disabled" if self.busy else "readonly")
@@ -1621,10 +1669,10 @@ class ManagerApp:
             except Exception:
                 broken_shape = None
             if broken_shape:
-                self.report("error", "！32の破損形状が残っています", f"light_blockへ非対応のblockshape「{broken_shape}」が指定されています。", "Minecraftを終了し、「選択パックに調整を適用」を押すと形状指定を撤去します。", "LIGHT_BLOCK_SHAPE_BROKEN")
+                self.report("error", "！32の破損形状が残っています", f"light_blockへ非対応のblockshape「{broken_shape}」が指定されています。", "Minecraftを終了し、「変更をMinecraftへ適用」を押すと形状指定を撤去します。", "LIGHT_BLOCK_SHAPE_BROKEN")
                 return
             if not assets_ready:
-                self.report("warning", "ライト表示用データが不足しています", "手持ち時の標準アイコンまたはVibrant Visuals照明設定を確認できません。", "「選択パックに調整を適用」を押すと、ライト0～15の表示データを追加します。", "LIGHT_BLOCK_ASSETS_MISSING")
+                self.report("warning", "ライト表示用データが不足しています", "手持ち時の標準アイコンまたはVibrant Visuals照明設定を確認できません。", "「変更をMinecraftへ適用」を押すと、ライト0～15の表示データを追加します。", "LIGHT_BLOCK_ASSETS_MISSING")
                 return
             fog_path = self.selected.path / "fogs" / "overworld_fog.json"
             lighting_path = self.selected.path / "lighting" / "global.json"
@@ -1718,7 +1766,7 @@ class ManagerApp:
                 "info",
                 f"{gpu}向け推奨値に変更しました",
                 "画面上の推奨値だけを変更しました。Minecraftのパックはまだ変更していません。",
-                "反映するには「選択パックに調整を適用」を押してください。",
+                "反映するには「変更をMinecraftへ適用」を押してください。",
                 "GPU_PROFILE_CHANGED",
             )
 
@@ -1770,7 +1818,7 @@ class ManagerApp:
             "info",
             "GitHubに更新があります",
             f"アプリ {manifest['app']['version']} / リソースパック！{pack_number}",
-            "画面下の更新ボタンを押すと、取得からMinecraftへの導入まで自動で行います。",
+            "「その他」から更新を選ぶと、取得からMinecraftへの導入まで自動で行います。",
             "UPDATE_AVAILABLE",
         )
 
@@ -1929,7 +1977,7 @@ class ManagerApp:
             cave_light = "最大5.0" if settings["night_vision"] else "通常"
             self.report("success", "設定の適用が完了しました", f"水透明度: {settings['water_transparency']}% / 洞窟最低環境光: {cave_light}", "Minecraftを完全に終了してから起動し、！33を無効化・！34を最上位で有効化してワールドへ入り直してください。", "APPLY_OK")
             messagebox.showinfo("調整できました", f"水の透明度: {settings['water_transparency']}%\n水中フォグ・散乱・吸収: 0（100%時）\n洞窟最低環境光: {cave_light}\n空の間接光: 最大1.0\n\nMinecraftを完全に終了してから起動し、！33を無効化して！34を最上位で有効化してください。")
-        self.start_task("apply", "設定を適用しています", worker, success)
+        self.start_task("apply", "変更をMinecraftへ適用しています", worker, success)
 
     def restore_pack(self) -> None:
         if not self.selected or not messagebox.askyesno("元に戻します", "選択パックを調整前の状態へ戻しますか？"):
