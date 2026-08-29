@@ -4,10 +4,10 @@
   "channel": "stable",
   "published_at": "2026-08-29T00:00:00+09:00",
   "app": {
-    "version": "2.8.1",
+    "version": "2.9.0",
     "file_name": "My Original RTX Manager.pyw",
     "url": "https://raw.githubusercontent.com/koresuke26/my-original-rtx-manager-updates/main/My%20Original%20RTX%20Manager.pyw",
-    "sha256": "abef8f47d24c619c30875427edadd16504fda3e89f1d096fb20a3a0f5d49a439"
+    "sha256": "b5077f7540a607e0c12e52a8fede5d3e3ebe0f49ffc9e390dede0d3c9197ff8b"
   },
   "pack": {
     "number": 34,
@@ -26,6 +26,10 @@
     "アプリの設定適用時にも古い照明JSONを自動修復",
     "水の透明度100%、水中フォグ・散乱・吸収0を維持",
     "洞窟最低環境光5.0、空の間接光1.0を維持",
-    "！34の名前とパック番号を維持"
+    "！34の名前とパック番号を維持",
+    "ヘッダーを薄型化し、GPUとパック選択を整理",
+    "ビジュアル設定を3枚の独立カードに再構成",
+    "保護設定・診断履歴・更新・書き出し・削除を詳細メニューへ整理",
+    "設定適用とMinecraft起動を主操作として強調"
   ]
 }
