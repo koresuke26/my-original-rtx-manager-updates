@@ -1,0 +1,43 @@
+name: Build Windows EXE
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "My Original RTX Manager.pyw"
+      - "My_Original_Visual_Pack_34.mcpack"
+      - ".github/workflows/build-windows-exe.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install PyInstaller
+        run: python -m pip install --upgrade pyinstaller
+
+      - name: Build standalone executable
+        shell: pwsh
+        run: |
+          pyinstaller --noconfirm --clean --onefile --windowed `
+            --name "My Original RTX Manager" `
+            --add-data "My_Original_Visual_Pack_34.mcpack;assets" `
+            "My Original RTX Manager.pyw"
+          Copy-Item "README_起動手順.txt" "dist\README_起動手順.txt"
+          Compress-Archive -Path "dist\*" -DestinationPath "My_Original_RTX_Manager_2.9.0_EXE.zip" -Force
+
+      - name: Upload standalone executable
+        uses: actions/upload-artifact@v4
+        with:
+          name: My_Original_RTX_Manager_2.9.0_EXE
+          path: My_Original_RTX_Manager_2.9.0_EXE.zip
