@@ -2,12 +2,12 @@
   "schema_version": 1,
   "repository": "koresuke26/my-original-rtx-manager-updates",
   "channel": "stable",
-  "published_at": "2026-08-12T00:00:00+09:00",
+  "published_at": "2026-08-29T00:00:00+09:00",
   "app": {
-    "version": "2.8.0",
+    "version": "2.8.1",
     "file_name": "My Original RTX Manager.pyw",
     "url": "https://raw.githubusercontent.com/koresuke26/my-original-rtx-manager-updates/main/My%20Original%20RTX%20Manager.pyw",
-    "sha256": "778f0a34c70882de88185bcc3aa65dbd45cf5d7b8c8032103945c05221f37816"
+    "sha256": "abef8f47d24c619c30875427edadd16504fda3e89f1d096fb20a3a0f5d49a439"
   },
   "pack": {
     "number": 34,
@@ -20,12 +20,12 @@
     "header_uuid": "d50e4372-6f38-4cf6-9a3f-20a1c93585a0"
   },
   "notes": [
-    "参考画面に合わせてヘッダー・設定グループ・操作カードを整理",
-    "水の透明度を全GPUプロファイルで100%へ変更",
-    "水中フォグ密度・散乱・吸収をすべて0へ変更",
-    "洞窟最低環境光を公式上限5.0 luxへ変更",
-    "空の間接光を公式上限1.0へ変更",
-    "診断で水・洞窟の最大設定を数値確認する方式へ変更",
-    "！33のライト標準表示、公式16px、凹凸、反射を維持"
+    "MinecraftコンテンツログのLighting Expected keyframesエラーを修正",
+    "導入時にiba_strong:overworld_lightingの定義を1.21.80互換形式へ自動修正",
+    "既存パックの82個のclient_biome照明参照をアプリ起動時に自動修復",
+    "アプリの設定適用時にも古い照明JSONを自動修復",
+    "水の透明度100%、水中フォグ・散乱・吸収0を維持",
+    "洞窟最低環境光5.0、空の間接光1.0を維持",
+    "！34の名前とパック番号を維持"
   ]
 }

@@ -25,7 +25,7 @@ from tkinter import filedialog, messagebox, ttk
 
 
 APP_NAME = "My Original RTX Manager"
-APP_VERSION_NUMBER = "2.8.0"
+APP_VERSION_NUMBER = "2.8.1"
 APP_VERSION = f"{APP_VERSION_NUMBER} Python"
 PACK_NUMBER = 34
 PACK_FOLDER = "My_Original_Visual_Pack_34"
@@ -104,6 +104,70 @@ def read_json(path: Path) -> dict:
 def write_json(path: Path, value: object) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+
+def normalize_keyframes(value: object) -> object:
+    """Return a stable Bedrock time-of-day keyframe map when one is present."""
+    if not isinstance(value, dict):
+        return value
+    normalized: dict[str, object] = {}
+    for raw_key, item in value.items():
+        try:
+            time_of_day = float(raw_key)
+        except (TypeError, ValueError):
+            continue
+        if 0.0 <= time_of_day <= 1.0:
+            normalized[f"{time_of_day:.6f}"] = item
+    if not normalized:
+        return value
+    return dict(sorted(normalized.items(), key=lambda pair: float(pair[0])))
+
+
+def repair_lighting_settings(lighting: dict) -> dict:
+    """Repair the 1.26 lighting file shape used by the old !34 build.
+
+    Bedrock accepts the 1.21.80 lighting schema for the settings used here,
+    including sun/moon time-of-day keyframes.  Keeping this compatibility
+    version avoids the parser rejecting the file before registering its custom
+    identifier, which then produces one error for every client biome.
+    """
+    if not isinstance(lighting, dict):
+        lighting = {}
+    lighting["format_version"] = "1.21.80"
+    settings = lighting.setdefault("minecraft:lighting_settings", {})
+    if not isinstance(settings, dict):
+        settings = {}
+        lighting["minecraft:lighting_settings"] = settings
+    directional = settings.setdefault("directional_lights", {})
+    if isinstance(directional, dict):
+        orbital = directional.setdefault("orbital", {})
+        if isinstance(orbital, dict):
+            for body_name in ("sun", "moon"):
+                body = orbital.get(body_name)
+                if not isinstance(body, dict):
+                    continue
+                if "illuminance" in body:
+                    body["illuminance"] = normalize_keyframes(body["illuminance"])
+                if isinstance(body.get("color"), dict):
+                    body["color"] = normalize_keyframes(body["color"])
+            offset = orbital.get("orbital_offset_degrees")
+            if isinstance(offset, dict):
+                orbital["orbital_offset_degrees"] = normalize_keyframes(offset)
+            elif not isinstance(offset, (int, float)):
+                orbital["orbital_offset_degrees"] = 3.0
+    return lighting
+
+
+def repair_pack_lighting(pack_path: Path) -> bool:
+    """Repair a pack's registered global lighting definition in place."""
+    lighting_path = pack_path / "lighting" / "global.json"
+    if not lighting_path.is_file():
+        return False
+    original = read_json(lighting_path)
+    repaired = repair_lighting_settings(original)
+    if repaired != original:
+        write_json(lighting_path, repaired)
+    return True
 
 
 def safe_key(value: str) -> str:
@@ -258,6 +322,7 @@ def install_pack_archive(pack_file: Path, preview: bool, folder_name: str, expec
         with tempfile.TemporaryDirectory(prefix="my_original_rtx_install_") as temporary:
             stage = Path(temporary) / safe_key(folder_name)
             safe_extract_archive(archive, stage)
+            repair_pack_lighting(stage)
             if destination.exists():
                 backup = manager_home() / "Backups" / "Reinstall" / f"{int(time.time())}_{safe_key(folder_name)}"
                 backup.parent.mkdir(parents=True, exist_ok=True)
@@ -724,11 +789,11 @@ def tune_fog_lighting(pack_path: Path, settings: dict) -> None:
         write_json(fog_path, fog)
     lighting_path = pack_path / "lighting" / "global.json"
     if lighting_path.is_file():
-        lighting = read_json(lighting_path)
+        lighting = repair_lighting_settings(read_json(lighting_path))
     else:
         identifier = safe_key(pack_path.name.lower())[:48]
         lighting = {
-            "format_version": "1.26.0",
+            "format_version": "1.21.80",
             "minecraft:lighting_settings": {
                 "description": {"identifier": f"my_original_rtx_manager:{identifier}_lighting"},
                 "ambient": {},
@@ -736,6 +801,7 @@ def tune_fog_lighting(pack_path: Path, settings: dict) -> None:
                 "emissive": {},
             },
         }
+        lighting = repair_lighting_settings(lighting)
     entry = lighting.setdefault("minecraft:lighting_settings", {})
     ambient = entry.setdefault("ambient", {})
     sky = entry.setdefault("sky", {})
@@ -1497,6 +1563,12 @@ class ManagerApp:
             packs += scan_pack_directory(root / "resource_packs", label, "resource_packs", self.scan_issues)
             packs += scan_pack_directory(root / "development_resource_packs", label, "development_resource_packs", self.scan_issues)
         packs.sort(key=lambda pack: (0 if "！34" in pack.name else 1, pack.name))
+        for pack in packs:
+            if "！34" in pack.name:
+                try:
+                    repair_pack_lighting(pack.path)
+                except Exception as error:
+                    self.scan_issues.append((pack.path / "lighting" / "global.json", str(error)))
         self.packs = packs
         self.pack_combo["values"] = [pack.label for pack in packs]
         if packs:
@@ -1661,9 +1733,17 @@ class ManagerApp:
         pack = manifest["pack"]
         pack_name = str(pack.get("name", ""))
         pack_file_name = Path(str(pack.get("file_name", ""))).name
-        installed = any(item.name == pack_name for item in self.packs)
+        installed_versions = [version_tuple(item.version) for item in self.packs if item.name == pack_name]
+        installed = bool(installed_versions)
         asset_exists = bool(pack_file_name) and (BASE_DIR / "assets" / pack_file_name).is_file()
-        pack_needed = int(pack["number"]) > PACK_NUMBER or not installed or not asset_exists
+        required_pack_version = version_tuple(pack.get("version", "0"))
+        installed_pack_version = max(installed_versions, default=(0,))
+        pack_needed = (
+            int(pack["number"]) > PACK_NUMBER
+            or not installed
+            or not asset_exists
+            or installed_pack_version < required_pack_version
+        )
         return app_needed, pack_needed
 
     def automatic_update_check(self) -> None:
